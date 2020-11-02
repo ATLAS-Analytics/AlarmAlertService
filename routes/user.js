@@ -2,21 +2,21 @@ module.exports = function us(app, config) {
   const elasticsearch = require('@elastic/elasticsearch');
 
   if (!config.TESTING) {
-    var config = require('/etc/ml-front-conf/mlfront-config.json');
-    var mg_config = require('/etc/mg-conf/config.json');
+    var config = require('/etc/aaasf/config.json');
+    var mgConf = require('/etc/aaasf/mg-config.json');
   } else {
     var config = require('../kube/secrets/config.json');
-    var mg_config = require('../kube/secrets/mg-config.json');
+    var mgConf = require('../kube/secrets/mg-config.json');
   }
 
-  let mg = require('mailgun-js')({ apiKey: mg_config.APPROVAL_MG, domain: mg_config.MG_DOMAIN });
+  // const mg = require('mailgun-js')({ apiKey: mgConf.APPROVAL_MG, domain: mgConf.MG_DOMAIN });
 
-  let module = {};
+  const module = {};
 
   module.User = class User {
     constructor(id = null) {
       this.es = new elasticsearch.Client({ node: config.ES_HOST, log: 'error' });
-      this.mg = require('mailgun-js')({ apiKey: mg_config.APPROVAL_MG, domain: mg_config.MG_DOMAIN });
+      this.mg = require('mailgun-js')({ apiKey: mgConf.APPROVAL_MG, domain: mgConf.MG_DOMAIN });
       this.approved_on = 0;
       this.approved = false;
       if (!config.APPROVAL_REQUIRED) {

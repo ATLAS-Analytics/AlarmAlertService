@@ -14,11 +14,9 @@ var mgConf;
 if (!TEST) {
   config = require('/etc/aaasf/config.json');
   globConf = require('/etc/aaasf/globus-config.json');
-  mgConf = require('/etc/aaasf/mg-config.json');
 } else {
   config = require('./kube/secrets/config.json');
   globConf = require('./kube/secrets/globus-config.json');
-  mgConf = require('./kube/secrets/mg-config.json');
 }
 
 console.log(config);
