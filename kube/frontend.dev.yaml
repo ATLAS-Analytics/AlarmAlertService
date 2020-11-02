@@ -15,30 +15,6 @@ spec:
   selector:
     k8s-app: aaasf
 ---
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: aaasf
-  namespace: aaas
-  labels:
-    k8s-app: aaasf
-  annotations:
-    kubernetes.io/ingress.class: ilija
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-spec:
-  tls:
-    - hosts:
-        - aaas.vukotic.me
-      secretName: auto-generated-aaasf
-  rules:
-    - host: aaas.vukotic.me
-      http:
-        paths:
-          - path: /
-            backend:
-              serviceName: aaasf
-              servicePort: 80
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:

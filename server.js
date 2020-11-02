@@ -9,7 +9,6 @@ const TEST = false;
 
 let config;
 let globConf;
-var mgConf;
 
 if (!TEST) {
   config = require('/etc/aaasf/config.json');

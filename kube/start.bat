@@ -16,3 +16,5 @@ kubectl create secret -n aaasf generic mg-config --from-file=mg-config.json=secr
 
 kubectl delete -f frontend.yaml
 kubectl create -f frontend.yaml
+
+START /B kubectl port-forward service/aaasf 80:80
