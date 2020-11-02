@@ -1,12 +1,13 @@
 module.exports = function us(app, config) {
   const elasticsearch = require('@elastic/elasticsearch');
+  const esUsersIndex = 'aaas_users';
+
+  let mgConf;
 
   if (!config.TESTING) {
-    var config = require('/etc/aaasf/config.json');
-    var mgConf = require('/etc/aaasf/mg-config.json');
+    mgConf = require('/etc/aaasf/mg-config.json');
   } else {
-    var config = require('../kube/secrets/config.json');
-    var mgConf = require('../kube/secrets/mg-config.json');
+    mgConf = require('../kube/secrets/mg-config.json');
   }
 
   // const mg = require('mailgun-js')({ apiKey: mgConf.APPROVAL_MG, domain: mgConf.MG_DOMAIN });
@@ -32,7 +33,7 @@ module.exports = function us(app, config) {
       console.log('adding user to ES...');
       try {
         const response = await this.es.index({
-          index: 'mlfront_users',
+          index: esUsersIndex,
           id: this.id,
           refresh: true,
           body: {
@@ -57,7 +58,7 @@ module.exports = function us(app, config) {
       console.log('deleting user from ES...');
       try {
         const response = await this.es.deleteByQuery({
-          index: 'mlfront_users',
+          index: esUsersIndex,
           body: { query: { match: { _id: this.id } } },
         });
         console.log(response);
@@ -70,7 +71,7 @@ module.exports = function us(app, config) {
     async update() {
       console.log('Updating user info in ES...');
       const req = {
-        index: 'mlfront_users',
+        index: esUsersIndex,
         id: this.id,
         body: {
           doc: {
@@ -92,21 +93,9 @@ module.exports = function us(app, config) {
     async load() {
       console.log("getting user's info...");
 
-      if (config.TESTING) {
-        this.name = 'Test User';
-        this.username = 'testUsername';
-        this.email = 'test@email.com';
-        this.affiliation = 'Test Institution';
-        this.created_at = new Date().getTime();
-        this.approved = true;
-        this.approved_on = new Date().getTime();
-        console.log('test user loaded.');
-        return true;
-      }
-
       try {
         const response = await this.es.search({
-          index: 'mlfront_users',
+          index: esUsersIndex,
           body: {
             query: {
               bool: {
@@ -260,7 +249,7 @@ module.exports = function us(app, config) {
       console.log('getting all users info from es.');
       try {
         const resp = await this.es.search({
-          index: 'mlfront_users',
+          index: esUsersIndex,
           body: {
             size: 1000,
             query: { match: { event: config.EVENT } },

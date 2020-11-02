@@ -3,4 +3,3 @@
 * add a tab "My subscriptions"
 * update logos
 * make Home page
-* update versions of jq etc.
