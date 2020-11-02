@@ -1,10 +1,7 @@
 /* eslint-disable no-multi-assign */
-import { readFileSync } from 'fs';
-import express, { static, json as _json } from 'express';
-import { createServer } from 'https';
-// const http = require('http');
-import { get, post } from 'request';
-import session from 'express-session';
+const express = require('express');
+const session = require('express-session');
+const mrequest = require('request');
 
 console.log('Alarm & Alert Service server starting ... ');
 
@@ -29,14 +26,13 @@ console.log(config);
 // App
 const app = express();
 
-app.use(static('./static'));
+app.use(express.static('./static'));
 
 app.set('view engine', 'pug');
-import { join } from 'path';
 
 app.set('views', 'views');
 
-app.use(_json()); // to support JSON-encoded bodies
+app.use(express.json()); // to support JSON-encoded bodies
 app.use(session({
   secret: 'mamicu mu njegovu',
   resave: false,
@@ -74,9 +70,7 @@ const jupyterCreator = async (req, res, next) => {
     next();
   } else {
     res.sendStatus(400).send('not all parameters POSTed.');
-    return;
   }
-
 };
 
 const requiresLogin = async (req, _res, next) => {
@@ -127,7 +121,7 @@ app.get('/get_services_from_es/:servicetype', async (req, res) => {
   const user = new usr.User(req.session.user_id);
   await user.load();
   user.print();
-  res.status(200).send(services);
+  res.status(200).send('smgth');
 });
 
 app.post('/jupyter', requiresLogin, jupyterCreator, (_req, res) => {
@@ -168,7 +162,7 @@ app.get('/logout', (req, res) => { // , next
       json: true,
     };
 
-    get(requestOptions, (error) => { // , response, body
+    mrequest.get(requestOptions, (error) => { // , response, body
       if (error) {
         console.log('logout failure...', error);
       }
@@ -200,7 +194,7 @@ app.get('/authcallback', (req, res) => {
 
   // console.log(requestOptions);
 
-  post(requestOptions, (error, _response, body) => {
+  mrequest.post(requestOptions, (error, _response, body) => {
     if (error) {
       console.log('failure...', error);
       res.redirect('/');
@@ -218,7 +212,7 @@ app.get('/authcallback', (req, res) => {
       headers: { Authorization: `Bearer ${body.access_token}` },
     };
 
-    post(idrequestOptions, async (error, _response, body) => {
+    mrequest.post(idrequestOptions, async (error, _response, body) => {
       if (error) {
         console.log('error on geting username:\t', error);
       }
@@ -253,7 +247,7 @@ app.get('/healthz', (_req, res) => {
   try {
     res.status(200).send('OK');
   } catch (err) {
-    console.log("not OK.", err);
+    console.log('not OK.', err);
   }
 });
 

@@ -2,7 +2,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: aaasf
-  namespace: aaasf
+  namespace: aaas
   labels:
     k8s-app: aaasf
 spec:
@@ -19,19 +19,19 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: aaasf
-  namespace: aaasf
+  namespace: aaas
   labels:
     k8s-app: aaasf
   annotations:
-    kubernetes.io/ingress.class: slate
+    kubernetes.io/ingress.class: ilija
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   tls:
     - hosts:
-        - aaas.atlas-ml.org
+        - aaas.vukotic.me
       secretName: auto-generated-aaasf
   rules:
-    - host: aaas.atlas-ml.org
+    - host: aaas.vukotic.me
       http:
         paths:
           - path: /
@@ -43,7 +43,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: aaasf
-  namespace: aaasf
+  namespace: aaas
   labels:
     k8s-app: aaasf
 spec:
