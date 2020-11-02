@@ -317,11 +317,5 @@ module.exports = function us(app, config) {
     res.render('profile', req.session);
   });
 
-  app.get('/users', async (req, res) => {
-    console.log('users called!');
-    res.render('users', req.session);
-  });
-
-
   return module;
 };

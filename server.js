@@ -235,11 +235,6 @@ app.get('/authcallback', (req, res) => {
   });
 });
 
-app.get('/about', async (req, res) => {
-  console.log('about called!');
-  res.render('about', req.session);
-});
-
 app.get('/healthz', (_req, res) => {
   // console.log('Checking health and if some private pod/service needs deletion.');
   try {
