@@ -18,14 +18,7 @@ module.exports = function us(app, config) {
     constructor(id = null) {
       this.es = new elasticsearch.Client({ node: config.ES_HOST, log: 'error' });
       this.mg = require('mailgun-js')({ apiKey: mgConf.APPROVAL_MG, domain: mgConf.MG_DOMAIN });
-      this.approved_on = 0;
-      this.approved = false;
-      if (!config.APPROVAL_REQUIRED) {
-        this.approved_on = new Date().getTime();
-        this.approved = true;
-      }
       this.created_at = new Date().getTime();
-      this.tzar = config.APPROVAL_EMAIL;
       if (id) { this.id = id; }
     }
 
@@ -41,10 +34,7 @@ module.exports = function us(app, config) {
             affiliation: this.affiliation,
             user: this.name,
             email: this.email,
-            event: config.EVENT,
-            created_at: new Date().getTime(),
-            approved: this.approved,
-            approved_on: this.approved_on,
+            created_at: new Date().getTime()
           },
         });
         console.log(response);
@@ -68,28 +58,6 @@ module.exports = function us(app, config) {
       console.log('Done.');
     }
 
-    async update() {
-      console.log('Updating user info in ES...');
-      const req = {
-        index: esUsersIndex,
-        id: this.id,
-        body: {
-          doc: {
-            approved_on: this.approved_on,
-            approved: this.approved,
-          },
-        },
-      };
-      console.log(req);
-      try {
-        const response = await this.es.update(req);
-        console.log(response);
-      } catch (err) {
-        console.error(err);
-      }
-      console.log('Done.');
-    }
-
     async load() {
       console.log("getting user's info...");
 
@@ -100,7 +68,6 @@ module.exports = function us(app, config) {
             query: {
               bool: {
                 must: [
-                  { match: { event: config.EVENT } },
                   { match: { _id: this.id } },
                 ],
               },
@@ -118,32 +85,16 @@ module.exports = function us(app, config) {
         const obj = response.body.hits.hits[0]._source;
         // console.log(obj);
         // var created_at = new Date(obj.created_at).toUTCString();
-        // var approved_on = new Date(obj.approved_on).toUTCString();
         this.name = obj.user;
         this.email = obj.email;
         this.affiliation = obj.affiliation;
         this.created_at = obj.created_at;
-        this.approved = obj.approved;
-        this.approved_on = obj.approved_on;
         return true;
       } catch (err) {
         console.error(err);
       }
       console.log('Done.');
       return false;
-    }
-
-    async approve() {
-      this.approved = true;
-      this.approved_on = new Date().getTime();
-      await this.update();
-      const body = {
-        from: `${config.EVENT}<${config.EVENT}@maniac.uchicago.edu>`,
-        to: this.email,
-        subject: 'Authorization approved',
-        text: `Dear ${this.name},\n\n\tyour request for access to ${config.EVENT} ML front has been approved.\n\nBest regards,\n\tML front Approval system.`,
-      };
-      this.send_mail_to_user(body);
     }
 
     send_mail_to_user(data) {
@@ -198,7 +149,6 @@ module.exports = function us(app, config) {
             query: {
               bool: {
                 must: [
-                  { match: { event: config.EVENT } },
                   { match: { owner: this.id } },
                 ],
               },
@@ -241,8 +191,6 @@ module.exports = function us(app, config) {
       console.log('- email', this.email);
       console.log('- affiliation', this.affiliation);
       console.log('- created at', this.created_at);
-      console.log('- approved', this.approved);
-      console.log('- approved on', this.approved_on);
     }
 
     async get_all_users() {
@@ -252,7 +200,6 @@ module.exports = function us(app, config) {
           index: esUsersIndex,
           body: {
             size: 1000,
-            query: { match: { event: config.EVENT } },
             sort: { created_at: { order: 'desc' } },
           },
         });
@@ -264,8 +211,7 @@ module.exports = function us(app, config) {
             const obj = resp.body.hits.hits[i]._source;
             // console.log(obj);
             const createdAt = new Date(obj.created_at).toUTCString();
-            const approvedOn = new Date(obj.approved_on).toUTCString();
-            const serv = [obj.user, obj.email, obj.affiliation, createdAt, obj.approved, approvedOn];
+            const serv = [obj.user, obj.email, obj.affiliation, createdAt];
             toSend.push(serv);
           }
         } else {

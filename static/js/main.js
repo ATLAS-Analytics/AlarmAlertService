@@ -143,60 +143,6 @@
 	});
 
 
-	$("#private-spark-start").submit(
-		function (event) {
-
-			event.preventDefault();
-
-			console.log("sparkJobHandler called.");
-
-			$("#name_valid").text("").show();
-			$("#path_valid").text("").show();
-
-			data = {}
-			if ($("#name").val() === "") {
-				$("#name_valid").text("Name is mandatory!").show();
-				return;
-			}
-			else {
-				inp = $("#name").val();
-				inp = inp.toLowerCase();
-				inp = inp.replace(" ", "-");
-				inp = inp.replace(".", "-");
-				inp = inp.replace(":", "-");
-				inp = inp.replace("_", "-");
-				$("#name").val(inp);
-			}
-			if ($("#exe_path").val() === "") {
-				$("#path_valid").text("URL is mandatory!").show();
-				return;
-			}
-
-			data['name'] = inp;
-			data['exe_path'] = $("#exe_path").val();
-			data['executors'] = $("#execs").val();
-			// data['memory'] = $("#memory").val();
-
-			// call REST API to submit spark job
-			var jqxhr = $.ajax({
-				type: 'post',
-				url: '/spark',
-				contentType: 'application/json',
-				data: JSON.stringify(data),
-				success: function (link) {
-					// alert('It can take several minutes after service status changes to "running" for the service to become available.');
-					window.location.href = "SparkJob_manage.html";
-				},
-				error: function (xhr, textStatus, errorThrown) {
-					alert('Error code:' + xhr.status + '.  ' + xhr.responseText);
-					window.location.href = "SparkJob_manage.html";
-				}
-			});
-
-		}
-	)
-
-
 	$("#logout_button").click(function () {
 		$.get("/logout");
 		window.location.replace("/");

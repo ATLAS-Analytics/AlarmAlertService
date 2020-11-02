@@ -80,22 +80,7 @@ const requiresLogin = async (req, _res, next) => {
     return next(error);
   }
 
-  if (config.APPROVAL_REQUIRED === false) return next();
-
-  console.log('Authorization required - searching for: ', req.session.user_id);
-
-  const user = new usr.User(req.session.user_id);
-  await user.load();
-
-  if (user.approved === true) {
-    console.log('authorized.');
-    return next();
-  }
-
-  console.log('NOT authorized!');
-  const error = new Error('You must be authorized for this service.');
-  error.status = 403;
-  return next(error);
+  return next();
 };
 
 // =============   routes ========================== //
@@ -224,11 +209,6 @@ app.get('/authcallback', (req, res) => {
       if (found === false) {
         await user.write();
       }
-      console.log('user is authorized:', user.approved);
-      req.session.authorized = user.approved;
-      if (user.approved === false) {
-        user.ask_for_approval();
-      }
       res.render('index', req.session);
     });
   });
@@ -247,9 +227,8 @@ app.get('/', async (req, res) => {
   console.log('===========> / CALL');
   if (req.session.loggedIn === undefined) {
     console.log('Defining...');
-    req.session.loggedIn = !config.APPROVAL_REQUIRED;
+    req.session.loggedIn = false;
     req.session.Title = config.TITLE;
-    req.session.plugins = config.PLUGINS;
   }
   console.log(req.session);
   res.render('index', req.session);
