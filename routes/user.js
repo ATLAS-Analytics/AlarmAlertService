@@ -1,7 +1,7 @@
 module.exports = function us(app, config) {
   const elasticsearch = require('@elastic/elasticsearch');
+  const es = new elasticsearch.Client(config.ES_HOST);
   const esUsersIndex = 'aaas_users';
-
   let mgConf;
 
   if (!config.TESTING) {
@@ -10,14 +10,13 @@ module.exports = function us(app, config) {
     mgConf = require('../kube/secrets/mg-config.json');
   }
 
-  // const mg = require('mailgun-js')({ apiKey: mgConf.APPROVAL_MG, domain: mgConf.MG_DOMAIN });
+  const mg = require('mailgun-js')({ apiKey: mgConf.APPROVAL_MG, domain: mgConf.MG_DOMAIN });
+
 
   const module = {};
 
   module.User = class User {
     constructor(id = null) {
-      this.es = new elasticsearch.Client({ node: config.ES_HOST, log: 'error' });
-      this.mg = require('mailgun-js')({ apiKey: mgConf.APPROVAL_MG, domain: mgConf.MG_DOMAIN });
       this.created_at = new Date().getTime();
       if (id) { this.id = id; }
     }
@@ -25,7 +24,7 @@ module.exports = function us(app, config) {
     async write() {
       console.log('adding user to ES...');
       try {
-        const response = await this.es.index({
+        const response = await es.index({
           index: esUsersIndex,
           id: this.id,
           refresh: true,
@@ -34,7 +33,7 @@ module.exports = function us(app, config) {
             affiliation: this.affiliation,
             user: this.name,
             email: this.email,
-            created_at: new Date().getTime()
+            created_at: new Date().getTime(),
           },
         });
         console.log(response);
@@ -44,35 +43,15 @@ module.exports = function us(app, config) {
       console.log('Done.');
     }
 
-    async delete() {
-      console.log('deleting user from ES...');
-      try {
-        const response = await this.es.deleteByQuery({
-          index: esUsersIndex,
-          body: { query: { match: { _id: this.id } } },
-        });
-        console.log(response);
-      } catch (err) {
-        console.error(err);
-      }
-      console.log('Done.');
-    }
+
 
     async load() {
       console.log("getting user's info...");
 
       try {
-        const response = await this.es.search({
+        const response = await es.search({
           index: esUsersIndex,
-          body: {
-            query: {
-              bool: {
-                must: [
-                  { match: { _id: this.id } },
-                ],
-              },
-            },
-          },
+          body: { query: { match: { _id: this.id } } },
         });
 
         console.debug(response.body.hits);
@@ -97,8 +76,8 @@ module.exports = function us(app, config) {
       return false;
     }
 
-    send_mail_to_user(data) {
-      this.mg.messages().send(data, (error, body) => {
+    sendMailToUser(data) {
+      mg.messages().send(data, (error, body) => {
         console.log(body);
       });
     }
@@ -110,7 +89,7 @@ module.exports = function us(app, config) {
         service.timestamp = new Date().getTime();
         service.user = this.name;
         console.log('creating service in es: ', service);
-        await this.es.index({
+        await es.index({
           index: 'ml_front', body: service,
         }, (err, resp, _status) => {
           console.log('from ES indexer:', resp);
@@ -124,7 +103,7 @@ module.exports = function us(app, config) {
       console.log('terminating service in ES: ', name, 'owned by', this.id);
       console.log('not implemented yet.');
       // try {
-      //     const response = await this.es.update({
+      //     const response = await es.update({
       //         index: 'ml_front',  id: this.id,
       //         body: {
       //             doc: {
@@ -143,7 +122,7 @@ module.exports = function us(app, config) {
     async get_services(servicetype) {
       console.log('getting all services >', servicetype, '< of user:', this.id);
       try {
-        const resp = await this.es.search({
+        const resp = await es.search({
           index: 'ml_front',
           body: {
             query: {
@@ -196,7 +175,7 @@ module.exports = function us(app, config) {
     async get_all_users() {
       console.log('getting all users info from es.');
       try {
-        const resp = await this.es.search({
+        const resp = await es.search({
           index: esUsersIndex,
           body: {
             size: 1000,
@@ -235,22 +214,41 @@ module.exports = function us(app, config) {
       username: req.session.username,
       organization: req.session.organization,
       user_id: req.session.user_id,
-      authorized: req.session.authorized,
     });
   });
 
-  app.get('/users_data', async (req, res) => {
-    console.log('Sending all users info...');
+  app.delete('/user/:userId', (req, res)=>{
+    const { userId } = req.params;
+    console.log('Deleting user with id:', userId);
+    es.deleteByQuery({
+      index: esUsersIndex,
+      body: { query: { match: { _id: userId } } },
+    },
+    (err, response) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send('Error in deleting user.');
+      } else if (response.body.deleted === 1){
+          res.status(200).send('OK');
+        } else {
+          console.log(response.body);
+          res.status(500).send('No user with that ID.');
+        }
+      }
+    });
+  });
+
+  app.get('/user/subscriptions', async (req, res) => {
+    console.log('Sending all users subscriptions...');
     const user = new module.User();
     const data = await user.get_all_users();
     res.status(200).send(data);
     console.log('Done.');
   });
 
-  app.get('/profile', async (req, res) => {
-    console.log('profile called!');
-    res.render('profile', req.session);
+  app.get('/get_users_services/:servicetype', async (req, res) => {
+    const { servicetype } = req.params;
+    console.log('user:', req.session.user_id, 'running services.', servicetype);
   });
-
   return module;
 };

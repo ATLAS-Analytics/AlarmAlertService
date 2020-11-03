@@ -90,10 +90,7 @@ app.get('/delete/:jservice', requiresLogin, (request, response) => {
   response.redirect('/');
 });
 
-app.get('/get_users_services/:servicetype', async (req, res) => {
-  const { servicetype } = req.params;
-  console.log('user:', req.session.user_id, 'running services.', servicetype);
-});
+
 
 app.get('/get_services_from_es/:servicetype', async (req, res) => {
   console.log(req.params);
@@ -212,6 +209,11 @@ app.get('/authcallback', (req, res) => {
       res.render('index', req.session);
     });
   });
+});
+
+app.get('/profile', async (req, res) => {
+  console.log('profile called!');
+  res.render('profile', req.session);
 });
 
 app.get('/healthz', (_req, res) => {
