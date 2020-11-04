@@ -26,7 +26,6 @@ const app = express();
 app.use(express.static('./static'));
 
 app.set('view engine', 'pug');
-
 app.set('views', 'views');
 
 app.use(express.json()); // to support JSON-encoded bodies
@@ -37,7 +36,9 @@ app.use(session({
   cookie: { secure: false, maxAge: 3600000 },
 }));
 
-const usr = require('./routes/user')(app, config);
+// const usr = require('./routes/user')(app, config);
+const usr = require('./routes/user');
+app.use('/user', usr.router);
 
 // GLOBUS STUFF
 const auth = 'Basic ' + new Buffer(globConf.CLIENT_ID + ':' + globConf.CLIENT_SECRET).toString('base64');
@@ -90,18 +91,16 @@ app.get('/delete/:jservice', requiresLogin, (request, response) => {
   response.redirect('/');
 });
 
+// app.get('/get_services_from_es/:servicetype', async (req, res) => {
+//   console.log(req.params);
+//   const { servicetype } = req.params;
+//   console.log('user:', req.session.user_id, 'service:', servicetype);
 
-
-app.get('/get_services_from_es/:servicetype', async (req, res) => {
-  console.log(req.params);
-  const { servicetype } = req.params;
-  console.log('user:', req.session.user_id, 'service:', servicetype);
-
-  const user = new usr.User(req.session.user_id);
-  await user.load();
-  user.print();
-  res.status(200).send('smgth');
-});
+//   const user = new usr.User(req.session.user_id);
+//   await user.load();
+//   user.print();
+//   res.status(200).send('smgth');
+// });
 
 app.post('/jupyter', requiresLogin, jupyterCreator, (_req, res) => {
   console.log('Private Jupyter created!');
@@ -110,24 +109,9 @@ app.post('/jupyter', requiresLogin, jupyterCreator, (_req, res) => {
 
 app.get('/login', async (req, res) => {
   console.log('Logging in');
-  if (config.TESTING) {
-    const user = new usr.User('test_id');
-    await user.load();
-    console.log('fake loaded');
-    user.write();
-    console.log('fake written.');
-    req.session.user_id = user.id;
-    req.session.name = user.name;
-    req.session.username = user.username;
-    req.session.affiliation = user.affiliation;
-    req.session.email = user.email;
-    req.session.loggedIn = true;
-    res.render('index', req.session);
-  } else {
-    const red = `${globConf.AUTHORIZE_URI}?scope=urn%3Aglobus%3Aauth%3Ascope%3Aauth.globus.org%3Aview_identities+openid+email+profile&state=garbageString&redirect_uri=${globConf.redirect_link}&response_type=code&client_id=${globConf.CLIENT_ID}`;
-    // console.log('redirecting to:', red);
-    res.redirect(red);
-  }
+  const red = `${globConf.AUTHORIZE_URI}?scope=urn%3Aglobus%3Aauth%3Ascope%3Aauth.globus.org%3Aview_identities+openid+email+profile&state=garbageString&redirect_uri=${globConf.redirect_link}&response_type=code&client_id=${globConf.CLIENT_ID}`;
+  // console.log('redirecting to:', red);
+  res.redirect(red);
 });
 
 app.get('/logout', (req, res) => { // , next
@@ -191,20 +175,20 @@ app.get('/authcallback', (req, res) => {
       headers: { Authorization: `Bearer ${body.access_token}` },
     };
 
-    mrequest.post(idrequestOptions, async (error, _response, body) => {
-      if (error) {
-        console.log('error on geting username:\t', error);
-      }
-      console.log('body:\t', body);
-      const user = new usr.User();
-      user.id = req.session.user_id = body.sub;
-      user.username = req.session.username = body.preferred_username;
-      user.affiliation = req.session.affiliation = body.organization;
-      user.name = req.session.name = body.name;
-      user.email = req.session.email = body.email;
-      const found = await user.load();
-      if (found === false) {
-        await user.write();
+    mrequest.post(idrequestOptions, async (error1, response1, body1) => {
+      if (error1) {
+        console.log('error on geting username:\t', error1);
+      } else {
+        console.log('body:\t', body1);
+        const u = {
+          id: body1.sub,
+          name: body1.name,
+          email: body1.email,
+          username: body1.preferred_username,
+          affiliation: body1.organization,
+        };
+        usr.addIfNeeded(u);
+        req.session.user = u;
       }
       res.render('index', req.session);
     });

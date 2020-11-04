@@ -15,16 +15,16 @@ block content
                         .card(style='width: 18rem;')
                         .card-body
                         | Name:
-                        p#name.card-text #{name}
+                        p#name.card-text #{user.name}
                         div                            
                         | Username:
-                        p#username.card-text #{username}
+                        p#username.card-text #{user.username}
                         div
                         | Email:
-                        p#email.card-text #{email}
+                        p#email.card-text #{user.email}
                         div
                         | Organization:
-                        p#affiliation.card-text #{affiliation}
+                        p#affiliation.card-text #{user.affiliation}
                         
                         button#logout_button.btn.btn-primary Logout 
                         | &nbsp;
