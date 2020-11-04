@@ -36,15 +36,20 @@ app.use(session({
   cookie: { secure: false, maxAge: 3600000 },
 }));
 
-// const usr = require('./routes/user')(app, config);
 const usr = require('./routes/user');
+const alarms = require('./routes/alarms');
+
+usr.init(config);
+alarms.init(config);
+
 app.use('/user', usr.router);
+app.use('/alarm', alarms.router);
 
 // GLOBUS STUFF
 const auth = 'Basic ' + new Buffer(globConf.CLIENT_ID + ':' + globConf.CLIENT_SECRET).toString('base64');
 
 const jupyterCreator = async (req, res, next) => {
-  if (req.body === 'undefined' || req.body === null) {
+  if (req.body === undefined || req.body === null) {
     res.status(400).send('nothing POSTed.');
     return;
   }
@@ -52,10 +57,10 @@ const jupyterCreator = async (req, res, next) => {
   console.log('body:', req.body);
 
   if (
-    typeof req.body.name !== 'undefined' && req.body.name
-    && typeof req.body.password !== 'undefined' && req.body.password
-    && typeof req.body.gpus !== 'undefined' && req.body.gpus
-    && typeof req.body.time !== 'undefined' && req.body.time
+    typeof req.body.name !== undefined && req.body.name
+    && typeof req.body.password !== undefined && req.body.password
+    && typeof req.body.gpus !== undefined && req.body.gpus
+    && typeof req.body.time !== undefined && req.body.time
   ) {
     console.log('Creating a private JupyterLab.');
     try {

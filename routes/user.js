@@ -1,12 +1,18 @@
 const elasticsearch = require('@elastic/elasticsearch');
 const express = require('express');
-const config = require('/etc/aaasf/config.json');
-// const mgConf = require('/etc/aaasf/mg-config.json');
+const bodyParser = require('body-parser');
+
+const esUsersIndex = 'aaas_users';
+let config;
+let es;
 
 const router = express.Router();
-const esUsersIndex = 'aaas_users';
-const es = new elasticsearch.Client(config.ES_HOST);
-// const mg = require('mailgun-js')({ apiKey: mgConf.APPROVAL_MG, domain: mgConf.MG_DOMAIN });
+const jsonParser = bodyParser.json();
+
+function init(configuration) {
+  config = configuration;
+  es = new elasticsearch.Client(config.ES_HOST);
+}
 
 async function addIfNeeded(u) {
   console.log('adding if needed:', u);
@@ -50,6 +56,26 @@ async function addIfNeeded(u) {
       console.log(obj);
       return true;
     });
+}
+
+async function loadUser(userId) {
+  console.log("loading user's info...", userId);
+  try {
+    const response = await es.search(
+      { index: esUsersIndex, body: { query: { match: { _id: userId } } } },
+    );
+    if (response.body.hits.total.value === 0) {
+      console.log('User not found.');
+      return false;
+    }
+    console.log('User found.');
+    const obj = response.body.hits.hits[0]._source;
+    console.log(obj);
+    return obj;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
 }
 
 //   sendMailToUser(data) {
@@ -172,10 +198,10 @@ async function addIfNeeded(u) {
 //   }
 // };
 
-// probably not needed.
-router.get('/', (req, res) => {
-  console.log('sending profile info back.');
-  res.json(req.session.user);
+router.get('/:userId', async (req, res) => {
+  const { userId } = req.params;
+  res.json(await loadUser(userId));
+  // res.json(req.session.user);
 });
 
 router.delete('/:userId', (req, res) => {
@@ -198,7 +224,7 @@ router.delete('/:userId', (req, res) => {
   });
 });
 
-router.get('/subscriptions', async (req, res) => {
+router.get('/subscriptions/:userId', async (req, res) => {
   console.log('Sending all users subscriptions...');
   const user = new module.User();
   const data = await user.get_all_users();
@@ -213,3 +239,4 @@ router.get('/subscriptions/:servicetype', async (req, res) => {
 
 exports.router = router;
 exports.addIfNeeded = addIfNeeded;
+exports.init = init;

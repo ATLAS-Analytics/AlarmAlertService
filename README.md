@@ -5,6 +5,7 @@ Alarms are stored in ES index:
 
 *aaas_alarms*
 * category
+* subcategory
 * event
 * created_at
 * tags
@@ -13,10 +14,12 @@ Alarms are stored in ES index:
 * body
 * details
 
-- REST API - 
-* POST alarm/create (should enforce category and level, make sure there are event, source and body )
-* DEL alarm/category
-* DEL alarm/event
+### REST API - alarm
+* POST alarm/ (should enforce category and level, make sure there are event, source and body )
+* GET alarm/topology (returns dictionary tree of category, subcategory, event)
+* DEL alarm/:category
+* DEL alarm/:category/:subcategory
+* DEL alarm/:category/:subcategory/:event
 
 *aaas_users*
 * affiliation
@@ -28,14 +31,14 @@ Alarms are stored in ES index:
 * subscriptions_options []
 * preferences
 
-- REST API -
-* GET user 
-* DEL user
+### REST API - user
+* GET user/:userId - done
+* DEL user/:userId - done
 * GET user/preferences
 * PUT user/preferences [a,b,c,...]
 * GET user/subscriptions
 * POST user/subscriptions - accepts json {[{category, event, options}]}
-* GET users/category/event - for alerts
+* GET user/category/event - for alerts
 
 *aaas_alerts*
 * created_at
