@@ -46,7 +46,8 @@ app.use('/user', usr.router);
 app.use('/alarm', alarms.router);
 
 // GLOBUS STUFF
-const auth = 'Basic ' + new Buffer(globConf.CLIENT_ID + ':' + globConf.CLIENT_SECRET).toString('base64');
+const bup = Buffer.from(`${globConf.CLIENT_ID}:${globConf.CLIENT_SECRET}`).toString('base64');
+const auth = `Basic ${bup}`;
 
 const jupyterCreator = async (req, res, next) => {
   if (req.body === undefined || req.body === null) {

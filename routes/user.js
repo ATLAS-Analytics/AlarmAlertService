@@ -84,7 +84,6 @@ async function loadUser(userId) {
 //     });
 //   }
 
-
 //   async add_service(service) {
 //     try {
 //       service.owner = this.id;

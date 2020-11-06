@@ -16,27 +16,51 @@ function init(configuration) {
   allowedFields = config.ALLOWED_FIELDS + ['category', 'subcategory', 'event'];
 }
 
-async function loadTopology(userId) {
-  console.log("loading topology...", userId);
+async function loadTopology() {
+  console.log('loading topology...');
   try {
-    const response = await es.search(
-      {
-        index: esAlarmsIndex,
-        body: {
-          query: {
-            match: { _id: userId },
+    const response = await es.search({
+      index: esAlarmsIndex,
+      body: {
+        size: 0,
+        aggs: {
+          c: {
+            terms: { field: 'category' },
+            aggs: {
+              sc: {
+                terms: { field: 'subcategory' },
+                aggs: {
+                  e: {
+                    terms: { field: 'event' },
+                  },
+                },
+              },
+            },
           },
         },
       },
-    );
+    });
     if (response.body.hits.total.value === 0) {
-      console.log('User not found.');
+      console.log('No events found.');
       return false;
     }
-    console.log('User found.');
-    const obj = response.body.hits.hits[0]._source;
-    console.log(obj);
-    return obj;
+    const obj = response.body.aggregations;
+    // console.debug(obj);
+    const to = {};
+    obj.c.buckets.forEach((cat) => {
+      // console.log(cat.key);
+      to[cat.key] = {};
+      cat.sc.buckets.forEach((sc) => {
+        // console.log(sc.key);
+        to[cat.key][sc.key] = {};
+        sc.e.buckets.forEach((ev) => {
+          // console.log(ev.key);
+          to[cat.key][sc.key][ev.key] = ev.doc_count;
+        });
+      });
+    });
+    console.log(to);
+    return to;
   } catch (err) {
     console.error(err);
     return false;
@@ -59,15 +83,15 @@ router.post('/', jsonParser, async (req, res) => {
     res.status(400).send('event is required.');
   }
 
-  console.log('Check that only allowed things are in.');
+  // console.log('Check that only allowed things are in.');
 
-  for (const [key, value] of Object.entries(b)) {
-    console.log(`${key}: ${value}`);
-    if (allowedFields.indexOf(key)<0){
+  Object.entries(b).forEach(([key, value]) => {
+    // console.log(`${key}: ${value}`);
+    if (allowedFields.indexOf(key) < 0) {
       console.log(`${key} not allowed.`);
       res.status(400).send(`key ${key} not allowed.`);
     }
-  }
+  });
 
   b.created_at = new Date().getTime();
 
