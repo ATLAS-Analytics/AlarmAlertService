@@ -1,9 +1,7 @@
 # Alarm and Alert Service Frontend
 REST interface and frontend 
 
-Alarms are stored in ES index: 
-
-*aaas_alarms*
+Alarms are stored in ES index: *aaas_alarms*
 * category
 * subcategory
 * event
@@ -14,7 +12,7 @@ Alarms are stored in ES index:
 * body
 * details
 
-### REST API - alarm
+### REST API - alarm - implemented
 * POST alarm/ (should enforce category and level, make sure there are event, source and body )
 * GET alarm/topology (returns dictionary tree of category, subcategory, event)
 * DEL alarm/:category
@@ -27,18 +25,20 @@ Alarms are stored in ES index:
 * email
 * user
 * username
-* subscriptions [aaas_alarms.category+aaas_alarms.event]
-* subscriptions_options []
-* preferences
+* subscriptions - nested?
+    .category
+    .subcategory
+    .event
+    .tags
+* preferences - flattened
+    .vacation ....
 
 ### REST API - user
 * GET user/:userId - done
 * DEL user/:userId - done
-* GET user/preferences
-* PUT user/preferences [a,b,c,...]
-* GET user/subscriptions
-* POST user/subscriptions - accepts json {[{category, event, options}]}
-* GET user/category/event - for alerts
+* POST user/:userId - only preferences {vaccation:T/F,...} 
+* GET user/subscriptions/:userId
+* POST user/subscriptions/:userId - accepts json {[{category, subcategory, event, tags}]}
 
 *aaas_alerts*
 * created_at

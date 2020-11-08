@@ -14,50 +14,6 @@ function init(configuration) {
   es = new elasticsearch.Client(config.ES_HOST);
 }
 
-async function addIfNeeded(u) {
-  console.log('adding if needed:', u);
-
-  console.log("getting user's info...");
-
-  es.search({ index: esUsersIndex, body: { query: { match: { _id: u.id } } } },
-    (err, response) => {
-      if (err) {
-        console.error('cant lookup user:\n', err);
-        return false;
-      }
-      console.debug(response.body.hits);
-
-      if (response.body.hits.total.value === 0) {
-        console.log('user not found. will add it');
-        es.index({
-          index: esUsersIndex,
-          id: u.id,
-          refresh: true,
-          body: {
-            username: u.username,
-            affiliation: u.affiliation,
-            user: u.name,
-            email: u.email,
-            created_at: new Date().getTime(),
-          },
-        }, (err1, response1) => {
-          if (err1) {
-            console.error('cant index user:\n', err1);
-            return false;
-          }
-          console.log('New user indexed.');
-          console.debug(response1.body);
-          return true;
-        });
-      }
-
-      console.log('User found.');
-      const obj = response.body.hits.hits[0]._source;
-      console.log(obj);
-      return true;
-    });
-}
-
 async function loadUser(userId) {
   console.log("loading user's info...", userId);
   try {
@@ -78,129 +34,54 @@ async function loadUser(userId) {
   }
 }
 
-//   sendMailToUser(data) {
-//     mg.messages().send(data, (error, body) => {
-//       console.log(body);
-//     });
-//   }
+async function writeUser(u) {
+  console.log('writing new user');
+  const defPref = {};
+  Object.entries(config.PREFERENCES).forEach(([key, value]) => {
+    // console.log(`${key}: ${value}`);
+    defPref[key] = value[1];
+  });
 
-//   async add_service(service) {
-//     try {
-//       service.owner = this.id;
-//       service.timestamp = new Date().getTime();
-//       service.user = this.name;
-//       console.log('creating service in es: ', service);
-//       await es.index({
-//         index: 'ml_front', body: service,
-//       }, (err, resp, _status) => {
-//         console.log('from ES indexer:', resp);
-//       });
-//     } catch (err) {
-//       console.error(err);
-//     }
-//   }
+  try {
+    const response = await es.index({
+      index: esUsersIndex,
+      id: u.id,
+      body: {
+        username: u.username,
+        affiliation: u.affiliation,
+        user: u.name,
+        email: u.email,
+        preferences: defPref,
+        subscriptions: [],
+        created_at: new Date().getTime(),
+      },
+    });
+    console.log('response', response.body);
+    if (response.body.result === 'created') {
+      console.log('New user indexed.');
+      return true;
+    }
+    console.log('New user NOT indexed.');
+    return false;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+}
 
-//   async terminate_service(name) {
-//     console.log('terminating service in ES: ', name, 'owned by', this.id);
-//     console.log('not implemented yet.');
-//     // try {
-//     //     const response = await es.update({
-//     //         index: 'ml_front',  id: this.id,
-//     //         body: {
-//     //             doc: {
-//     //                 "terminated_on": new Date().getTime(),
-//     //                 "terminated": true
-//     //             }
-//     //         }
-//     //     });
-//     //     console.log(response);
-//     // } catch (err) {
-//     //     console.error(err)
-//     // }
-//     console.log('Done.');
-//   }
-
-//   async get_services(servicetype) {
-//     console.log('getting all services >', servicetype, '< of user:', this.id);
-//     try {
-//       const resp = await es.search({
-//         index: 'ml_front',
-//         body: {
-//           query: {
-//             bool: {
-//               must: [
-//                 { match: { owner: this.id } },
-//               ],
-//             },
-//           },
-//           sort: { timestamp: { order: 'desc' } },
-//         },
-//       });
-//       // console.log(resp);
-//       let toSend = [];
-//       if (resp.body.hits.total.value > 0) {
-//         // console.log(resp.body.hits.hits);
-//         for (let i = 0; i < resp.body.hits.hits.length; i++) {
-//           let obj = resp.body.hits.hits[i]._source;
-//           if (obj.service !== servicetype) continue;
-//           console.log(obj);
-//           const startDate = new Date(obj.timestamp).toUTCString();
-//           if (servicetype === 'privatejupyter') {
-//             const endDate = new Date(obj.timestamp + obj.ttl * 86400000).toUTCString();
-//             const serv = [obj.service, obj.name, startDate, endDate, obj.gpus, obj.cpus, obj.memory];
-//             toSend.push(serv);
-//           }
-//           if (servicetype === 'sparkjob') {
-//             var serv = [obj.service, obj.name, startDate, obj.executors, obj.repository];
-//             toSend.push(serv);
-//           }
-//         }
-//       } else {
-//         console.log('no services found.');
-//       }
-//       return toSend;
-//     } catch (err) {
-//       console.error(err);
-//     }
-//     return [];
-//   }
-
-//   async get_all_users() {
-//     console.log('getting all users info from es.');
-//     try {
-//       const resp = await es.search({
-//         index: esUsersIndex,
-//         body: {
-//           size: 1000,
-//           sort: { created_at: { order: 'desc' } },
-//         },
-//       });
-//       // console.log(resp);
-//       let toSend = [];
-//       if (resp.body.hits.total.value > 0) {
-//         // console.log("Users found:", resp.body.hits.hits);
-//         for (let i = 0; i < resp.body.hits.hits.length; i++) {
-//           const obj = resp.body.hits.hits[i]._source;
-//           // console.log(obj);
-//           const createdAt = new Date(obj.created_at).toUTCString();
-//           const serv = [obj.user, obj.email, obj.affiliation, createdAt];
-//           toSend.push(serv);
-//         }
-//       } else {
-//         console.log('No users found.');
-//       }
-//       return toSend;
-//     } catch (err) {
-//       console.error(err);
-//     }
-//     console.log('Done.');
-//   }
-// };
+async function addIfNeeded(u) {
+  console.log('adding if needed:', u);
+  const res1 = await loadUser(u.id);
+  // console.log('res1', res1);
+  if (res1 === false) {
+    const res2 = await writeUser(u);
+    // console.log('res2', res2);
+  }
+}
 
 router.get('/:userId', async (req, res) => {
   const { userId } = req.params;
   res.json(await loadUser(userId));
-  // res.json(req.session.user);
 });
 
 router.delete('/:userId', (req, res) => {
@@ -214,26 +95,70 @@ router.delete('/:userId', (req, res) => {
     if (err) {
       console.error(err);
       res.status(500).send('Error in deleting user.');
-    } else if (response.body.deleted === 1) {
-      res.status(200).send('OK');
-    } else {
-      console.log(response.body);
-      res.status(500).send('No user with that ID.');
+      return;
     }
+    if (response.body.deleted === 1) {
+      res.status(200).send('OK');
+      return;
+    }
+    console.log(response.body);
+    res.status(500).send('No user with that ID.');
+  });
+});
+
+router.post('/:userId', jsonParser, async (req, res) => {
+  const { userId } = req.params;
+  const b = req.body;
+  console.log(`Updating preferences for user ${userId} with body:\n`, b);
+  if (b === undefined || b === null || Object.keys(b).length === 0) {
+    res.status(400).send('nothing POSTed.\n');
+    return;
+  }
+  // console.log('Check that only allowed things are in.');
+  let disallowed = '';
+  Object.entries(b).forEach(([key, value]) => {
+    // console.log(`${key}: ${value}`);
+    if (config.PREFERENCES[key] === undefined || config.PREFERENCES[key] === null) {
+      console.log(`${key} not allowed.\n`);
+      disallowed += `${key} not allowed.\n`;
+    }
+    if (typeof value !== config.PREFERENCES[key]) {
+      console.log(`${key} has wrong type. It should be ${config.PREFERENCES[key]}\n`);
+    }
+  });
+  if (disallowed.length > 0) {
+    res.status(400).send(disallowed);
+    return;
+  }
+  es.update({
+    index: esUsersIndex,
+    id: userId,
+    body: {
+      doc: {
+        preferences: b,
+      },
+    },
+  }, (err, response) => {
+    if (err) {
+      console.error('cant update user preferences:\n', err);
+      res.status(500).send(`something went wrong:\n${err}`);
+      return;
+    }
+    console.log('User preferences updated.');
+    console.debug(response.body);
+    res.status(200).send('OK');
   });
 });
 
 router.get('/subscriptions/:userId', async (req, res) => {
   console.log('Sending all users subscriptions...');
-  const user = new module.User();
-  const data = await user.get_all_users();
+  const data = {};
   res.status(200).send(data);
   console.log('Done.');
 });
 
-router.get('/subscriptions/:servicetype', async (req, res) => {
-  const { servicetype } = req.params;
-  console.log('user:', req.session.user_id, 'running services.', servicetype);
+router.post('/subscriptions/:userId', jsonParser, async (req, res) => {
+
 });
 
 exports.router = router;

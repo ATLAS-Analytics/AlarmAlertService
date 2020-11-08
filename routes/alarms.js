@@ -71,28 +71,35 @@ router.post('/', jsonParser, async (req, res) => {
   const b = req.body;
   console.log('body:', b);
   if (b === undefined || b === null || Object.keys(b).length === 0) {
-    res.status(400).send('nothing POSTed.');
+    res.status(400).send('nothing POSTed.\n');
+    return;
   }
   if (b.category === undefined || b.category === null) {
-    res.status(400).send('category is required.');
+    res.status(400).send('category is required.\n');
+    return;
   }
   if (b.subcategory === undefined || b.subcategory === null) {
-    res.status(400).send('subcategory is required.');
+    res.status(400).send('subcategory is required.\n');
+    return;
   }
   if (b.event === undefined || b.event === null) {
-    res.status(400).send('event is required.');
+    res.status(400).send('event is required.\n');
+    return;
   }
 
   // console.log('Check that only allowed things are in.');
-
+  let disallowed = '';
   Object.entries(b).forEach(([key, value]) => {
     // console.log(`${key}: ${value}`);
     if (allowedFields.indexOf(key) < 0) {
-      console.log(`${key} not allowed.`);
-      res.status(400).send(`key ${key} not allowed.`);
+      console.log(`${key} not allowed.\n`);
+      disallowed += `${key} not allowed.\n`;
     }
   });
-
+  if (disallowed.length > 0) {
+    res.status(400).send(disallowed);
+    return;
+  }
   b.created_at = new Date().getTime();
 
   es.index({
@@ -102,10 +109,11 @@ router.post('/', jsonParser, async (req, res) => {
     if (err) {
       console.error('cant index alarm:\n', err);
       res.status(500).send(`something went wrong:\n${err}`);
+    } else {
+      console.log('New alarm indexed.');
+      // console.debug(response.body);
+      res.status(200).send('OK');
     }
-    console.log('New alarm indexed.');
-    // console.debug(response.body);
-    res.status(200).send('OK');
   });
 });
 
