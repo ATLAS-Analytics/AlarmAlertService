@@ -155,86 +155,86 @@ router.post('/category', jsonParser, async (req, res) => {
 router.delete('/:category', async (req, res) => {
   const { category } = req.params;
   console.log('Deleting alarms in category:', category);
-  es.deleteByQuery({
-    index: esCategoriesIndex,
-    body: { query: { match: { category } } },
-    refresh: true,
-  },
-  async (err, response) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send('Error in deleting category.');
-    } else if (response.body.deleted > 0) {
+  try {
+    const response = await es.deleteByQuery({
+      index: esCategoriesIndex,
+      body: { query: { match: { category } } },
+      refresh: true,
+    });
+    if (response.body.deleted > 0) {
       await loadCategories();
       res.status(200).send('OK');
     } else {
       console.log(response.body);
       res.status(500).send('No alarms in that category.');
     }
-  });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error in deleting category.');
+  }
 });
 
 router.delete('/:category/:subcategory', async (req, res) => {
   const { category, subcategory } = req.params;
   console.log('Deleting alarms in:', category, '/', subcategory);
-  es.deleteByQuery({
-    index: esCategoriesIndex,
-    body: {
-      query: {
-        bool: {
-          must: [
-            { match: { category } },
-            { match: { subcategory } },
-          ],
+  try {
+    const response = await es.deleteByQuery({
+      index: esCategoriesIndex,
+      body: {
+        query: {
+          bool: {
+            must: [
+              { match: { category } },
+              { match: { subcategory } },
+            ],
+          },
         },
       },
-    },
-    refresh: true,
-  },
-  async (err, response) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send('Error in deleting subcategory.');
-    } else if (response.body.deleted > 0) {
+      refresh: true,
+    });
+    if (response.body.deleted > 0) {
       await loadCategories();
       res.status(200).send('OK');
     } else {
       console.log(response.body);
       res.status(500).send('No alarms in that subcategory.');
     }
-  });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error in deleting subcategory.');
+  }
 });
 
 router.delete('/:category/:subcategory/:event', async (req, res) => {
   const { category, subcategory, event } = req.params;
   console.log('Deleting alarms in:', category, '/', subcategory, '/', event);
-  es.deleteByQuery({
-    index: esCategoriesIndex,
-    body: {
-      query: {
-        bool: {
-          must: [
-            { match: { category } },
-            { match: { subcategory } },
-            { match: { event } },
-          ],
+  try {
+    const response = await es.deleteByQuery({
+      index: esCategoriesIndex,
+      body: {
+        query: {
+          bool: {
+            must: [
+              { match: { category } },
+              { match: { subcategory } },
+              { match: { event } },
+            ],
+          },
         },
       },
-    },
-    refresh: true,
-  },
-  async (err, response) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send('Error in deleting event.');
-    } else if (response.body.deleted > 1) {
+      refresh: true,
+    });
+    if (response.body.deleted > 0) {
       await loadCategories();
       res.status(200).send('OK');
     } else {
       console.log(response.body);
       res.status(500).send('No alarms in that event.');
     }
-  });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error in deleting event.');
+  }
 });
 
 exports.router = router;
