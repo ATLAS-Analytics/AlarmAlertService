@@ -1,6 +1,13 @@
 # Alarm and Alert Service Frontend
 REST interface and frontend 
 
+Alarm types are stored as a single document in index *aaas_topology*
+* topology - flattened
+    {category:{
+        subcategory:{
+
+        }
+    }}
 Alarms are stored in ES index: *aaas_alarms*
 * category
 * subcategory
@@ -36,7 +43,7 @@ Alarms are stored in ES index: *aaas_alarms*
 ### REST API - user
 * GET user/:userId - done
 * DEL user/:userId - done
-* POST user/:userId - only preferences {vaccation:T/F,...} 
+* POST user/:userId - only preferences {vaccation:T/F,...}  - done
 * GET user/subscriptions/:userId
 * POST user/subscriptions/:userId - accepts json {[{category, subcategory, event, tags}]}
 

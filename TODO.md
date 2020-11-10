@@ -1,3 +1,4 @@
+* before updating preferences, subscriptions, check that userid exists.
 * change indices that hold alerts
 * make Alert dropdown populate from the index
 * add a tab "My subscriptions"
