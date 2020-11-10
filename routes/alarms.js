@@ -24,6 +24,8 @@ async function loadCategories() {
       return false;
     }
     const { hits } = response.body.hits;
+    categories.length = 0;
+    cats.length = 0;
     hits.forEach((hit) => {
       const s = hit._source;
       // console.log(s);
@@ -137,7 +139,7 @@ router.post('/category', jsonParser, async (req, res) => {
 
   try {
     const response = await es.index({
-      index: esCategoriesIndex, body: b,
+      index: esCategoriesIndex, body: b, refresh: true,
     });
     console.log('Category added.');
     console.debug(response.body);
@@ -156,6 +158,7 @@ router.delete('/:category', async (req, res) => {
   es.deleteByQuery({
     index: esCategoriesIndex,
     body: { query: { match: { category } } },
+    refresh: true,
   },
   async (err, response) => {
     if (err) {
@@ -186,6 +189,7 @@ router.delete('/:category/:subcategory', async (req, res) => {
         },
       },
     },
+    refresh: true,
   },
   async (err, response) => {
     if (err) {
@@ -217,6 +221,7 @@ router.delete('/:category/:subcategory/:event', async (req, res) => {
         },
       },
     },
+    refresh: true,
   },
   async (err, response) => {
     if (err) {

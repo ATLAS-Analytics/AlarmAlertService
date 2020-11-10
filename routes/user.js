@@ -46,6 +46,7 @@ async function writeUser(u) {
     const response = await es.index({
       index: esUsersIndex,
       id: u.id,
+      refresh: true,
       body: {
         username: u.username,
         affiliation: u.affiliation,
@@ -89,6 +90,7 @@ router.delete('/:userId', (req, res) => {
   console.log('Deleting user with id:', userId);
   es.deleteByQuery({
     index: esUsersIndex,
+    refresh: true,
     body: { query: { match: { _id: userId } } },
   },
   (err, response) => {
@@ -133,6 +135,7 @@ router.post('/:userId', jsonParser, async (req, res) => {
   es.update({
     index: esUsersIndex,
     id: userId,
+    refresh: true,
     body: {
       doc: {
         preferences: b,
