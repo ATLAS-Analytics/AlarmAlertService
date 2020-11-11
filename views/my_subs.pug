@@ -1,0 +1,68 @@
+extends ./index.pug
+
+block content
+    section#gtco-header.gtco-cover.gtco-cover-xs.gtco-inner.bg-light
+        .gtco-container.container
+            .row
+            .col-lg-12.mx-auto
+                h2 My Subscriptions
+
+    .gtco-services.gtco-section
+        .col-md-12.col-md-offset-0.text-left
+            table#subscriptions_table.display(style='width:80%')
+                thead
+                    tr
+                        th Category
+                        th Subcategory
+                        th Event
+                        th Subscribed
+                each s in #{subscriptions}
+                    tr
+                        td= s.category
+                        td= s.subcategory
+                        td= s.event  
+                        td= input( id='vacation' type='checkbox' checked=true )
+                div
+
+                button#update_subscriptions_button.btn.btn-primary Update
+
+block extra_scripts
+    script.
+        ( function () {
+            var table = $('#subscriptions_table').DataTable({
+                "paging": false,
+                "searching": true,
+                "aoColumns": [
+                    { "mData": 0, "sTitle": "Category", "sWidth": "20%" },
+                    { "mData": 1, "sTitle": "Subcategory", "sWidth": "20%" },
+                    { "mData": 2, "sTitle": "Event", "sWidth": "40%" },
+                    { "mData": 3, "sTitle": "Subscribed", "sWidth": "20%" }
+                ]
+            });
+        }());
+
+        ( function () {
+            $('#update_subscriptions_button').click((event) => {
+                event.preventDefault();
+                console.log('Update preferences called');
+
+                const data = {};
+                //- data.vacation = $('#vacation').is(':checked');
+                const toSend=JSON.stringify(data);
+                console.log('toSend',toSend);
+                let jqxhr = $.ajax({
+                type: 'post',
+                url: '/user/subscriptions/#{userId}',
+                contentType: 'application/json',
+                data: toSend,
+                success() {
+                    console.log('success');
+                    window.location.href = '/';
+                },
+                error(xhr, textStatus, errorThrown) {
+                    alert(`Error code:${xhr.status}.${xhr.responseText}`);
+                    window.location.href = '/';
+                }
+                });
+            });
+        }());

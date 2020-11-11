@@ -5,27 +5,78 @@ block content
         .container
             .row
                 .col-lg-5.mx-auto
-                    h2 Profile
-                    p.lead
-                    | Your profile information corresponds to globus account. 
-                    | It is possible to have multiple globus identities. 
-                    | Team membership is based on your username.
-                .col-lg-6.mx-auto
+                    h2 Profile                 
                     div
-                        .card(style='width: 18rem;')
-                        .card-body
-                        | Name:
-                        p#name.card-text #{user.name}
-                        div                            
-                        | Username:
-                        p#username.card-text #{user.username}
-                        div
-                        | Email:
-                        p#email.card-text #{user.email}
-                        div
-                        | Organization:
-                        p#affiliation.card-text #{user.affiliation}
-                        
-                        button#logout_button.btn.btn-primary Logout 
-                        | &nbsp;
-                        button#user_delete_button.btn.btn-primary Delete
+                    .card(style='width: 18rem;')
+                    .card-body
+                    | Name:
+                    p#name.card-text #{user}
+                    div
+                    | Email:
+                    p#email.card-text #{email}
+                    div
+                    | Organization:
+                    p#affiliation.card-text #{affiliation}
+                    
+                    button#logout_button.btn.btn-primary Logout 
+                    | &nbsp;
+                    button#user_delete_button.btn.btn-primary Delete
+                               
+                    
+                .col-lg-6.mx-auto
+                    h2 Preferences
+                    div
+                    | Vacation
+                    input( id='vacation' type='checkbox' checked=preferences.vacation )
+                    div
+                    button#update_preferences_button.btn.btn-primary Update Preferences
+
+block extra_scripts
+    script.
+        //- this function works. button not really needed.
+        //- ( function () {
+        //-     $(":checkbox").change(function(){
+        //-         const key=$(this).attr('id');
+        //-         const chc=$(this).is(':checked');
+        //-         data={};
+        //-         data[key]=chc;
+        //-         console.log('data',data);
+        //-         const toSend=JSON.stringify(data);
+        //-         console.log('toSend',toSend);
+        //-         alert('data to send:' + toSend);
+        //-         $.ajax({
+        //-             type: "POST",
+        //-             url: "/user/#{userId}",
+        //-             data: toSend,
+        //-             success: function() { alert( "ALL OK" ); },
+        //-             contentType: "application/json; charset=utf-8",
+        //-             dataType: "json"
+        //-         });
+        //-     });
+        //- }());
+
+        ( function () {
+            $('#update_preferences_button').click((event) => {
+                event.preventDefault();
+                console.log('Update preferences called');
+
+                const data = {};
+                data.vacation = $('#vacation').is(':checked');
+                const toSend=JSON.stringify(data);
+                console.log('toSend',toSend);
+                let jqxhr = $.ajax({
+                type: 'post',
+                url: '/user/preferences/#{userId}',
+                contentType: 'application/json',
+                data: toSend,
+                success() {
+                    console.log('success');
+                    window.location.href = '/';
+                },
+                error(xhr, textStatus, errorThrown) {
+                    alert(`Error code:${xhr.status}.${xhr.responseText}`);
+                    window.location.href = '/';
+                }
+                });
+            });
+        }());

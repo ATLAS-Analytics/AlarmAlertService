@@ -108,7 +108,7 @@ router.delete('/:userId', (req, res) => {
   });
 });
 
-router.post('/:userId', jsonParser, async (req, res) => {
+router.post('/preferences/:userId', jsonParser, async (req, res) => {
   const { userId } = req.params;
   const b = req.body;
   console.log(`Updating preferences for user ${userId} with body:\n`, b);
@@ -125,7 +125,7 @@ router.post('/:userId', jsonParser, async (req, res) => {
       disallowed += `${key} not allowed.\n`;
     }
     if (typeof value !== config.PREFERENCES[key]) {
-      console.log(`${key} has wrong type. It should be ${config.PREFERENCES[key]}\n`);
+      console.log(`Warning! ${key} has wrong type. It should be ${config.PREFERENCES[key]}\n`);
     }
   });
   if (disallowed.length > 0) {
@@ -153,17 +153,38 @@ router.post('/:userId', jsonParser, async (req, res) => {
   });
 });
 
-router.get('/subscriptions/:userId', async (req, res) => {
-  console.log('Sending all users subscriptions...');
-  const data = {};
-  res.status(200).send(data);
-  console.log('Done.');
-});
-
 router.post('/subscriptions/:userId', jsonParser, async (req, res) => {
-
+  const { userId } = req.params;
+  const b = req.body;
+  console.log(`Updating subscriptions for user ${userId} with body:\n`, b);
+  if (b === undefined || b === null || Object.keys(b).length === 0) {
+    res.status(400).send('nothing POSTed.\n');
+    return;
+  }
+  // TODO console.log('Check that only allowed things are in.');
+  // TODO check subscription not already there.
+  es.update({
+    index: esUsersIndex,
+    id: userId,
+    refresh: true,
+    body: {
+      doc: {
+        subscriptions: b,
+      },
+    },
+  }, (err, response) => {
+    if (err) {
+      console.error('cant update user subscriptions:\n', err);
+      res.status(500).send(`something went wrong:\n${err}`);
+      return;
+    }
+    console.log('User subscriptions updated.');
+    console.debug(response.body);
+    res.status(200).send('OK');
+  });
 });
 
 exports.router = router;
 exports.addIfNeeded = addIfNeeded;
+exports.loadUser = loadUser;
 exports.init = init;

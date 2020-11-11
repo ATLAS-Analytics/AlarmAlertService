@@ -14,20 +14,19 @@ nav#mainNav.navbar.navbar-expand-lg.fixed-top(style='background-image: linear-gr
 
         li.nav-item.dropdown
           a#navbarDropdown.nav-link.dropdown-toggle(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false')
-            | Services
+            | Alarms
           .dropdown-menu(aria-labelledby='navbarDropdown')
             if (loggedIn)
               a.dropdown-item(href='/networking') Networking
               a.dropdown-item(href='/computing') Computing
               a.dropdown-item(href='/analytics') Analytics
 
-        li.nav-item
-          a.nav-link(href='/my_subscriptions') My Subscriptions
-
         if (!loggedIn)
           li.login_button.nav-item
             a.nav-link(href='/login') Login
         
         if (loggedIn)
+          li.nav-item
+            a.nav-link(href='/my_subscriptions') My Subscriptions
           li.profile_button.nav-item
             a.nav-link(href='/profile') Profile

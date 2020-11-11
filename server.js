@@ -49,33 +49,23 @@ app.use('/alarm', alarms.router);
 const bup = Buffer.from(`${globConf.CLIENT_ID}:${globConf.CLIENT_SECRET}`).toString('base64');
 const auth = `Basic ${bup}`;
 
-const jupyterCreator = async (req, res, next) => {
-  if (req.body === undefined || req.body === null) {
-    res.status(400).send('nothing POSTed.');
-    return;
-  }
-
-  console.log('body:', req.body);
-
-  if (
-    typeof req.body.name !== undefined && req.body.name
-    && typeof req.body.password !== undefined && req.body.password
-    && typeof req.body.gpus !== undefined && req.body.gpus
-    && typeof req.body.time !== undefined && req.body.time
-  ) {
-    console.log('Creating a private JupyterLab.');
-    try {
-      req.body.time = parseInt(req.body.time, 10);
-      req.body.gpus = parseInt(req.body.gpus, 10);
-    } catch (error) {
-      res.sendStatus(400).send('unparseable parameters.');
-      return;
-    }
-    next();
-  } else {
-    res.sendStatus(400).send('not all parameters POSTed.');
-  }
-};
+// const jupyterCreator = async (req, res, next) => {
+//   if (
+//     typeof req.body.name !== undefined && req.body.name
+//     && typeof req.body.password !== undefined && req.body.password
+//     && typeof req.body.gpus !== undefined && req.body.gpus
+//     && typeof req.body.time !== undefined && req.body.time
+//   ) {
+//     console.log('Creating a private JupyterLab.');
+//     try {
+//       req.body.time = parseInt(req.body.time, 10);
+//       req.body.gpus = parseInt(req.body.gpus, 10);
+//     } catch (error) {
+//       res.sendStatus(400).send('unparseable parameters.');
+//       return;
+//     }
+//     next();
+// };
 
 const requiresLogin = async (req, _res, next) => {
   // to be used as middleware
@@ -92,26 +82,10 @@ const requiresLogin = async (req, _res, next) => {
 
 // =============   routes ========================== //
 
-app.get('/delete/:jservice', requiresLogin, (request, response) => {
-  const { jservice } = request.params;
-  response.redirect('/');
-});
-
-// app.get('/get_services_from_es/:servicetype', async (req, res) => {
-//   console.log(req.params);
-//   const { servicetype } = req.params;
-//   console.log('user:', req.session.user_id, 'service:', servicetype);
-
-//   const user = new usr.User(req.session.user_id);
-//   await user.load();
-//   user.print();
-//   res.status(200).send('smgth');
+// app.get('/delete/:jservice', requiresLogin, (request, response) => {
+//   const { jservice } = request.params;
+//   response.redirect('/');
 // });
-
-app.post('/jupyter', requiresLogin, jupyterCreator, (_req, res) => {
-  console.log('Private Jupyter created!');
-  res.status(200).send(res.link);
-});
 
 app.get('/login', async (req, res) => {
   console.log('Logging in');
@@ -201,9 +175,24 @@ app.get('/authcallback', (req, res) => {
   });
 });
 
+app.get('/my_subscriptions', async (req, res) => {
+  console.log(`showing subscriptions of user: ${req.session.user_id}`);
+  const userInfo = await usr.loadUser(req.session.user.id);
+  // console.log('userINFO', userInfo);
+  // TODO logic if returned info is false
+  userInfo.loggedIn = true;
+  userInfo.userId = req.session.user.id;
+  res.render('my_subs', userInfo);
+});
+
 app.get('/profile', async (req, res) => {
   console.log('profile called!');
-  res.render('profile', req.session);
+  const userInfo = await usr.loadUser(req.session.user.id);
+  // console.log('userINFO', userInfo);
+  // TODO logic if returned info is false
+  userInfo.loggedIn = true;
+  userInfo.userId = req.session.user.id;
+  res.render('profile', userInfo);
 });
 
 app.get('/healthz', (_req, res) => {

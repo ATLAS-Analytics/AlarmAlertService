@@ -43,8 +43,7 @@ Alarms are stored in ES index: *aaas_alarms*
 ### REST API - user
 * GET user/:userId - done
 * DEL user/:userId - done
-* POST user/:userId - only preferences {vaccation:T/F,...}  - done
-* GET user/subscriptions/:userId
+* POST user/preferences/:userId - only preferences {vaccation:T/F,...}  - done
 * POST user/subscriptions/:userId - accepts json {[{category, subcategory, event, tags}]}
 
 *aaas_alerts*
