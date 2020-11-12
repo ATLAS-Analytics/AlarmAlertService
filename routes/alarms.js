@@ -239,3 +239,4 @@ router.delete('/:category/:subcategory/:event', async (req, res) => {
 
 exports.router = router;
 exports.init = init;
+exports.loadCategories = loadCategories;

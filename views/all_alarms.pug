@@ -1,0 +1,58 @@
+extends ./index.pug
+
+block content
+    section#gtco-header.bg-light
+        .container
+            .row
+                .col-lg-5.mx-auto
+                    h2 Alarms
+                    ul#menu
+                        li Electronics
+                            ul
+                                li Home Entertainment
+                                li Car Hifi
+                                li Utilities
+                    each val in categories
+                        li= val
+
+                .col-lg-6.mx-auto
+                    h2 Details
+                    div
+                    | Description
+                    div
+                    button#subscribe_button.btn.btn-primary Subscribe
+                    | &nbsp;
+                    button#subscribe_button.btn.btn-primary Unsubscribe
+
+block extra_scripts
+    script.
+        ( function() {
+            $( "#menu" ).menu();
+        }());
+
+
+        //- ( function () {
+        //-     $('#subscribe_button').click((event) => {
+        //-         event.preventDefault();
+        //-         console.log('Subscribe called');
+
+        //-         const data = {};
+        //-         //- data.vacation = $('#vacation').is(':checked');
+        //-         const toSend=JSON.stringify(data);
+        //-         console.log('toSend',toSend);
+        //-         let jqxhr = $.ajax({
+        //-         type: 'post',
+        //-         url: '/user/subscriptions/#{userId}',
+        //-         contentType: 'application/json',
+        //-         data: toSend,
+        //-         success() {
+        //-             console.log('success');
+        //-             window.location.href = '/';
+        //-         },
+        //-         error(xhr, textStatus, errorThrown) {
+        //-             alert(`Error code:${xhr.status}.${xhr.responseText}`);
+        //-             window.location.href = '/';
+        //-         }
+        //-         });
+        //-     });
+        //- }());

@@ -21,7 +21,7 @@ Alarms are stored in ES index: *aaas_alarms*
 
 ### REST API - alarm - implemented
 * POST alarm/ (should enforce category and level, make sure there are event, source and body )
-* GET alarm/topology (returns dictionary tree of category, subcategory, event)
+* GET alarm/categories (returns dictionary tree of category, subcategory, event)
 * DEL alarm/:category
 * DEL alarm/:category/:subcategory
 * DEL alarm/:category/:subcategory/:event

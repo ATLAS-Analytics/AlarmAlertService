@@ -175,6 +175,18 @@ app.get('/authcallback', (req, res) => {
   });
 });
 
+app.get('/all_alarms', async (req, res) => {
+  console.log(`showing all alarms to user: ${req.session.user_id}`);
+  const userInfo = await usr.loadUser(req.session.user.id);
+  const categories = await alarms.loadCategories();
+  // console.log('userINFO', userInfo);
+  // TODO logic if returned info is false
+  userInfo.loggedIn = true;
+  userInfo.userId = req.session.user.id;
+  userInfo.categories = categories;
+  res.render('all_alarms', userInfo);
+});
+
 app.get('/my_subscriptions', async (req, res) => {
   console.log(`showing subscriptions of user: ${req.session.user_id}`);
   const userInfo = await usr.loadUser(req.session.user.id);

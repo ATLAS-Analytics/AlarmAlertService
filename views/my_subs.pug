@@ -15,13 +15,16 @@ block content
                         th Category
                         th Subcategory
                         th Event
+                        th Tags
                         th Subscribed
-                each s in #{subscriptions}
+                each s in subscriptions
                     tr
                         td= s.category
                         td= s.subcategory
                         td= s.event  
-                        td= input( id='vacation' type='checkbox' checked=true )
+                        td= s.tags  
+                        td 
+                        //- input( id='vacation' type='checkbox' checked=true )
                 div
 
                 button#update_subscriptions_button.btn.btn-primary Update
@@ -33,10 +36,11 @@ block extra_scripts
                 "paging": false,
                 "searching": true,
                 "aoColumns": [
-                    { "mData": 0, "sTitle": "Category", "sWidth": "20%" },
-                    { "mData": 1, "sTitle": "Subcategory", "sWidth": "20%" },
-                    { "mData": 2, "sTitle": "Event", "sWidth": "40%" },
-                    { "mData": 3, "sTitle": "Subscribed", "sWidth": "20%" }
+                    { "mData": 0, "sWidth": "20%" },
+                    { "mData": 1, "sWidth": "20%" },
+                    { "mData": 2, "sWidth": "20%" },
+                    { "mData": 3, "sWidth": "30%" },
+                    { "mData": 4, "sWidth": "10%" },
                 ]
             });
         }());
