@@ -5,7 +5,7 @@ const mrequest = require('request');
 
 console.log('Alarm & Alert Service server starting ... ');
 
-const TEST = true;
+const TEST = false;
 
 let config;
 let globConf;
@@ -14,6 +14,8 @@ if (!TEST) {
   config = require('/etc/aaasf/config.json');
   globConf = require('/etc/aaasf/globus-config.json');
 } else {
+  config = require('./kube/secrets/config.json');
+  globConf = require('./kube/secrets/globus-config.json');
   config = require('./config.json');
   globConf = require('./globus-config.json');
 }
@@ -89,14 +91,9 @@ const requiresLogin = async (req, _res, next) => {
 
 app.get('/login', async (req, res) => {
   console.log('Logging in');
-  req.session.user = {};
-  req.session.user.id='a51dbd7e-d274-11e5-9b11-9be347a09ce0'
-  const userInfo = await usr.loadUser(req.session.user.id);
-  // console.log('userINFO', userInfo);
-  // TODO logic if returned info is false
-  userInfo.loggedIn = true;
-  userInfo.userId = req.session.user.id;
-  res.render('profile', userInfo);
+  const red = `${globConf.AUTHORIZE_URI}?scope=urn%3Aglobus%3Aauth%3Ascope%3Aauth.globus.org%3Aview_identities+openid+email+profile&state=garbageString&redirect_uri=${globConf.redirect_link}&response_type=code&client_id=${globConf.CLIENT_ID}`;
+  // console.log('redirecting to:', red);
+  res.redirect(red);
 });
 
 app.get('/logout', (req, res) => { // , next
