@@ -114,3 +114,31 @@ hr {
 xmp {
 white-space: pre-wrap;/* css-3 problematic browser support */
 }
+
+.h2,h2 {
+  margin-bottom: 1rem;
+}
+
+.navcontainer {
+  margin-left: 0%;
+}
+
+.ml-middle {
+  margin-left:30%
+}
+
+.nav-link {
+  cursor: pointer;
+  font-size: 16px;  
+  border: 2px solid #0b012e;
+  outline: none;
+  color: #ffffff;
+  padding: 14px 16px;
+  background-color: #044687;
+  font-family: inherit;
+  margin: 0;
+}
+
+.btn {
+  float:right;
+}

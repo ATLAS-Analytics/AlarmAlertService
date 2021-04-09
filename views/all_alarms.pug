@@ -6,53 +6,169 @@ block content
             .row
                 .col-lg-5.mx-auto
                     h2 Alarms
-                    ul#menu
-                        li Electronics
-                            ul
-                                li Home Entertainment
-                                li Car Hifi
-                                li Utilities
-                    each val in categories
-                        li= val
+                    div(id="SimpleJSTree")
+                    button#jstree_button.btn.btn-primary Update Selected Alarms
 
                 .col-lg-6.mx-auto
                     h2 Details
-                    div
-                    | Description
-                    div
-                    button#subscribe_button.btn.btn-primary Subscribe
-                    | &nbsp;
-                    button#subscribe_button.btn.btn-primary Unsubscribe
+                    div(id="description")
+                        h5 Hover over an Event to Have its Description Appear Here
+                    br
+            br
+            br
+            br
+            br
+            h2 My Current Subscriptions
+            table#subscriptions_table.display(style='width:80%')
+                thead
+                    tr
+                        th Category
+                        th Subcategory
+                        th Event
+                each s in subscriptions
+                    tr
+                        td= s.category
+                        td= s.subcategory
+                        td= s.event  
+                        //- input( id='vacation' type='checkbox' checked=true )
+                div
 
 block extra_scripts
     script.
-        ( function() {
-            $( "#menu" ).menu();
+        ( function () {
+            var table = $('#subscriptions_table').DataTable({
+                "paging": false,
+                "searching": false,
+                "aoColumns": [
+                    { "mData": 0, "sWidth": "20%" },
+                    { "mData": 1, "sWidth": "20%" },
+                    { "mData": 2, "sWidth": "20%" },
+                ]
+            });
         }());
 
+        var catdata = !{JSON.stringify(categories)};
+        var subdata = !{JSON.stringify(subscriptions)}
+        console.log(subdata)
+        for (i=0; i<subdata.length; i++) {
+            subdata[i] = {"category":subdata[i].category,"subcategory":subdata[i].subcategory,"event":subdata[i].event};
+        }
+        treedata = []
+        for (i=0; i<catdata.length; i++) {
+            treedata.push({"id":catdata[i].category,"parent":"#","text":catdata[i].category});
+            treedata.push({"id":catdata[i].category+" "+catdata[i].subcategory,"parent":catdata[i].category,"text":catdata[i].subcategory});
+            treedata.push({"id":catdata[i].category+" "+catdata[i].subcategory+" "+catdata[i].event,"parent":catdata[i].category+" "+catdata[i].subcategory,"text":catdata[i].event,"data":catdata[i].description});
+        };
 
-        //- ( function () {
-        //-     $('#subscribe_button').click((event) => {
-        //-         event.preventDefault();
-        //-         console.log('Subscribe called');
+        function multiDimensionalUnique(arr) {
+            var uniques = [];
+            var itemsFound = {};
+            for(var i = 0, l = arr.length; i < l; i++) {
+                var stringified = JSON.stringify(arr[i]);
+                if(itemsFound[stringified]) { continue; }
+                uniques.push(arr[i]);
+                itemsFound[stringified] = true;
+            }
+            return uniques;
+        }
 
-        //-         const data = {};
-        //-         //- data.vacation = $('#vacation').is(':checked');
-        //-         const toSend=JSON.stringify(data);
-        //-         console.log('toSend',toSend);
-        //-         let jqxhr = $.ajax({
-        //-         type: 'post',
-        //-         url: '/user/subscriptions/#{userId}',
-        //-         contentType: 'application/json',
-        //-         data: toSend,
-        //-         success() {
-        //-             console.log('success');
-        //-             window.location.href = '/';
-        //-         },
-        //-         error(xhr, textStatus, errorThrown) {
-        //-             alert(`Error code:${xhr.status}.${xhr.responseText}`);
-        //-             window.location.href = '/';
-        //-         }
-        //-         });
-        //-     });
-        //- }());
+        for (i=0; i<treedata.length; i+=3) {
+            cat = treedata[i].text;
+            sub = treedata[i+1].text;
+            eve = treedata[i+2].text;
+            var arr = {"category":cat,"subcategory":sub,"event":eve};
+            for (j=0; j<subdata.length; j++) {
+                //console.log('cat arr',arr);
+                //console.log(subdata[j]);
+                if (arr.category === subdata[j].category) {
+                    if (arr.subcategory === subdata[j].subcategory) {
+                        if (arr.event === subdata[j].event) {
+                            //console.log('match',arr);
+                            treedata[i+2].state = {"loaded":true, "opened": false, "selected":true, "disabled":false}
+                        }
+                    }
+                }
+            }
+        }
+        treedata = multiDimensionalUnique(treedata)
+ 
+        //console.log('rendered subscriptions data',subdata);
+        //console.log('rendered categories data',catdata);
+        //console.log('test jstree data',treedata);
+        $(function () {
+            $('#SimpleJSTree').jstree({
+                core: {
+                    themes: {
+                        variant: "large"
+                    },
+                    data: treedata
+                },
+                plugins: ["checkbox"]
+            });
+            $('#SimpleJSTree').on("changed.jstree", function (e, data) {
+                console.log(data);
+                
+            });
+            $('#SimpleJSTree').bind("hover_node.jstree", function(e, data) {
+                //console.log(data.node.data);
+                if (data.node.children.length === 0) {
+                    var desc = document.getElementById('description')
+                    desc.innerHTML = "";
+                    desc.innerHTML = data.node.data;
+                };
+            });          
+        });    
+
+        console.log(catdata)
+
+        $('#jstree_button').click((event) => {
+            //console.log(subdata)
+            subdata = []
+            event.preventDefault();
+            //console.log('Update preferences called');
+            var checked_ids = [];
+            checked_ids = $('#SimpleJSTree').jstree("get_selected",true)
+            //console.log(checked_ids);
+
+            //console.log(treedata)
+            var final = []
+            for (i=0; i<checked_ids.length; i++) {
+                if (checked_ids[i].children.length ==0) {
+                    for (j=0; j<catdata.length; j++) {
+                        if (checked_ids[i].text == catdata[j].event) {
+                            if (checked_ids[i].parents[1] == catdata[j].category) {
+                                final.push(catdata[j])
+                                //console.log(catdata[j])
+                            }
+                        }
+                    }
+                }
+            };
+            
+            for (i=0; i<final.length; i++) {
+                final[i] = {'category': final[i].category,'subcategory': final[i].subcategory,'event': final[i].event}
+                //console.log(final[i])
+                subdata.push(final[i])
+            };
+            console.log(subdata)
+        
+            var toSend = JSON.stringify(subdata)
+            if (subdata.length == 0) {
+                var toSend = JSON.stringify([{'category': null ,'subcategory': null ,'event': null}])
+            }
+            console.log('toSend',toSend);
+            let jqxhr = $.ajax({
+                type: 'post',
+                url: '/user/subscriptions/#{userId}',
+                contentType: 'application/json',
+                data: toSend,
+                success() {
+                    console.log('success');
+                },
+                error(xhr, textStatus, errorThrown) {
+                    alert(`Error Code::${xhr.status}.${xhr.responseText}`);
+                }
+            })
+            setTimeout(location.reload.bind(location), 300);
+
+        });

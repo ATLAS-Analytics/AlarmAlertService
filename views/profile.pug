@@ -9,26 +9,29 @@ block content
                     div
                     .card(style='width: 18rem;')
                     .card-body
-                    | Name:
+                    | <h5> Name: </h5>
                     p#name.card-text #{user}
                     div
-                    | Email:
+                    | <h5> Email: </h5>
                     p#email.card-text #{email}
                     div
-                    | Organization:
+                    | <h5> Organization: </h5>
                     p#affiliation.card-text #{affiliation}
                     
                     button#logout_button.btn.btn-primary Logout 
-                    | &nbsp;
+                    br
+                    br
                     button#user_delete_button.btn.btn-primary Delete
                                
                     
                 .col-lg-6.mx-auto
                     h2 Preferences
+                    .card(style='width: 18rem;')
+                    .card-body
+                    | <h4> Vacation &nbsp;
+                    input( id='vacation' type='checkbox' width='20px' checked=preferences.vacation )
                     div
-                    | Vacation
-                    input( id='vacation' type='checkbox' checked=preferences.vacation )
-                    div
+                    br
                     button#update_preferences_button.btn.btn-primary Update Preferences
 
 block extra_scripts

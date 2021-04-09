@@ -1,27 +1,29 @@
 nav#mainNav.navbar.navbar-expand-lg.fixed-top(style='background-image: linear-gradient(#04519b, #044687 60%, #033769);')
-  .container
+  .navcontainer
     block up_left_logo
       a.navbar-brand(href='https://github.com/ATLAS-Analytics')
-        img.d-inline-block.align-top(src='images/aaas.png' width='30' height='30' alt='')
+        img.d-inline-block.align-top(src='images/aaas_new.png' width='65' height='65' alt='')
         | #{Title}
+  .container
     button.navbar-toggler(type='button' data-toggle='collapse' data-target='#navbarResponsive' aria-controls='navbarResponsive' aria-expanded='false' aria-label='Toggle navigation')
       span.navbar-toggler-icon
     #navbarResponsive.collapse.navbar-collapse
-      ul.navbar-nav.ml-auto
+      ul.navbar-nav.ml-middle
 
         li.nav-item
-          a.nav-link(href='/') Home
-
-
+          a.nav-link(href='/') <h5> Home </h5>
+        | &nbsp;
 
         if (!loggedIn)
           li.login_button.nav-item
-            a.nav-link(href='/login') Login
+            a.nav-link(href='/login') <h5>Login</h5>
+          | &nbsp;
         
         if (loggedIn)
 
           li.nav-item
-            a.nav-link(href='/all_alarms') All alarms
+            a.nav-link(href='/all_alarms') <h5>All Alarms and Subscriptions</h5>
+          | &nbsp;
 
           //- li.nav-item.dropdown
           //- a#navbarDropdown.nav-link.dropdown-toggle(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false')
@@ -32,8 +34,10 @@ nav#mainNav.navbar.navbar-expand-lg.fixed-top(style='background-image: linear-gr
           //-     a.dropdown-item(href='/computing') Computing
           //-     a.dropdown-item(href='/analytics') Analytics
 
-          li.nav-item
-            a.nav-link(href='/my_subscriptions') My Subscriptions
+          //- li.nav-item
+            a.nav-link(href='/my_subscriptions') <h5>My Subscriptions</h5>
+          //- | &nbsp;
 
           li.profile_button.nav-item
-            a.nav-link(href='/profile') Profile
+            a.nav-link(href='/profile') <h5>Profile</h5>
+          | &nbsp;
