@@ -35,7 +35,7 @@ async function loadCategories() {
 
     console.debug(categories);
     console.debug(cats);
-    return true;
+    return categories;
   } catch (err) {
     console.error(err);
     return false;
