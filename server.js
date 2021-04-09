@@ -16,8 +16,6 @@ if (!TEST) {
 } else {
   config = require('./kube/secrets/config.json');
   globConf = require('./kube/secrets/globus-config.json');
-  config = require('./config.json');
-  globConf = require('./globus-config.json');
 }
 
 console.log(config);
