@@ -136,7 +136,9 @@ router.post('/fetch', jsonParser, async (req, res) => {
     res.status(400).send('period is required. Just number of hours.\n');
     return;
   }
-  const {category, subcategory, event, period} = b;
+  const {
+    category, subcategory, event, period,
+  } = b;
 
   console.log('Getting alarms in:', category, '/', subcategory, '/', event, '/', period);
   const alarms = [];
@@ -177,7 +179,7 @@ router.post('/fetch', jsonParser, async (req, res) => {
 router.post('/category', jsonParser, async (req, res) => {
   const b = req.body;
   console.log('Adding category with body:\n', b);
-  if (b === undefined || b === null || Object.keys(b).length !== 4) {
+  if (b === undefined || b === null || Object.keys(b).length < 4) {
     res.status(400).send('nothing POSTed or data incomplete.\n');
     return;
   }
