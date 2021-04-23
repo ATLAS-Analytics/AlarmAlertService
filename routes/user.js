@@ -14,20 +14,31 @@ function init(configuration) {
   es = new elasticsearch.Client(config.ES_HOST);
 }
 
-async function loadUser(userId) {
-  console.log("loading user's info...", userId);
+async function loadUser(userId = null) {
   try {
+    let query = { match_all: {} };
+    if (userId) {
+      console.log('loading user\'s info...', userId);
+      query = { match: { _id: userId } };
+    } else {
+      console.log('loading all the users.');
+    }
     const response = await es.search(
-      { index: esUsersIndex, body: { query: { match: { _id: userId } } } },
+      { index: esUsersIndex, size: 1000, body: { query } },
     );
     if (response.body.hits.total.value === 0) {
       console.log('User not found.');
       return false;
     }
-    console.log('User found.');
-    const obj = response.body.hits.hits[0]._source;
-    console.log(obj);
-    return obj;
+    if (userId) {
+      console.log('User found.');
+      const obj = response.body.hits.hits[0]._source;
+      console.log(obj);
+      return obj;
+    }
+
+    console.log('Users found.');
+    return response.body.hits.hits;
   } catch (err) {
     console.error(err);
     return false;
@@ -79,6 +90,10 @@ async function addIfNeeded(u) {
     // console.log('res2', res2);
   }
 }
+
+router.get('/', async (req, res) => {
+  res.json(await loadUser());
+});
 
 router.get('/:userId', async (req, res) => {
   const { userId } = req.params;
