@@ -184,7 +184,7 @@ app.get('/all_alarms', requiresLogin, async (req, res) => {
   res.render('all_alarms', userInfo);
 });
 
-app.get('/my_subscriptions',requiresLogin, async (req, res) => {
+app.get('/my_subscriptions', requiresLogin, async (req, res) => {
   console.log(`showing subscriptions of user: ${req.session.user_id}`);
   const userInfo = await usr.loadUser(req.session.user.id);
   // console.log('userINFO', userInfo);

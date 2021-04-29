@@ -146,7 +146,7 @@ router.post('/preferences/:userId', jsonParser, async (req, res) => {
       console.log(`${key} not allowed.\n`);
       disallowed += `${key} not allowed.\n`;
     }
-    if (typeof value !== config.PREFERENCES[key]) {
+    if (typeof value !== config.PREFERENCES[key][0]) {
       console.log(`Warning! ${key} has wrong type. It should be ${config.PREFERENCES[key]}\n`);
     }
   });
