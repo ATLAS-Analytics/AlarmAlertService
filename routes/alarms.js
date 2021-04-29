@@ -17,7 +17,11 @@ async function loadCategories() {
   console.log('loading categories...');
   try {
     const response = await es.search(
-      { index: esCategoriesIndex, body: { query: { match_all: {} } } },
+      {
+        index: esCategoriesIndex,
+        size: 1000,
+        body: { query: { match_all: {} } } 
+      },
     );
     if (response.body.hits.total.value === 0) {
       console.log('No categories found.');
@@ -85,7 +89,7 @@ router.post('/', jsonParser, async (req, res) => {
 
   // console.log('Check that the category was registered');
   if (cats.includes(`${b.category}_${b.subcategory}_${b.event}`)) {
-    console.log('category registered');
+    console.debug('category registered');
   } else {
     res.status(400).send('no such category, subcategory or event allowed.');
     return;
@@ -146,6 +150,7 @@ router.post('/fetch', jsonParser, async (req, res) => {
     const response = await es.search(
       {
         index: esAlarmsIndex,
+        size: 1000,
         body: {
           query: {
             bool: {
