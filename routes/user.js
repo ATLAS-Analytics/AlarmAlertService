@@ -33,6 +33,13 @@ async function loadUser(userId = null) {
     if (userId) {
       console.log('User found.');
       const obj = response.body.hits.hits[0]._source;
+      // make sure all preferences are there
+      Object.entries(config.PREFERENCES).forEach(([key, value]) => {
+        // console.log(`${key}: ${value}`);
+        if (!(key in obj.preferences)) {
+          [, obj.preferences[key]] = value;
+        }
+      });
       console.log(obj);
       return obj;
     }
@@ -50,7 +57,7 @@ async function writeUser(u) {
   const defPref = {};
   Object.entries(config.PREFERENCES).forEach(([key, value]) => {
     // console.log(`${key}: ${value}`);
-    defPref[key] = value[1];
+    [, defPref[key]] = value;
   });
 
   try {

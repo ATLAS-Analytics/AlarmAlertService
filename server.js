@@ -67,17 +67,14 @@ const auth = `Basic ${bup}`;
 //     next();
 // };
 
-const requiresLogin = async (req, _res, next) => {
+const requiresLogin = async (req, res, next) => {
   // to be used as middleware
-
   if (req.session.loggedIn !== true) {
     console.log('NOT logged in!');
-    const error = new Error('You must be logged in to view this page.');
-    error.status = 403;
-    return next(error);
+    res.redirect('/');
+  } else {
+    next();
   }
-
-  return next();
 };
 
 // =============   routes ========================== //
@@ -175,7 +172,7 @@ app.get('/authcallback', (req, res) => {
   });
 });
 
-app.get('/all_alarms', async (req, res) => {
+app.get('/all_alarms', requiresLogin, async (req, res) => {
   console.log(`showing all alarms to user: ${req.session.user_id}`);
   const userInfo = await usr.loadUser(req.session.user.id);
   const categories = await alarms.loadCategories();
@@ -187,7 +184,7 @@ app.get('/all_alarms', async (req, res) => {
   res.render('all_alarms', userInfo);
 });
 
-app.get('/my_subscriptions', async (req, res) => {
+app.get('/my_subscriptions',requiresLogin, async (req, res) => {
   console.log(`showing subscriptions of user: ${req.session.user_id}`);
   const userInfo = await usr.loadUser(req.session.user.id);
   // console.log('userINFO', userInfo);
@@ -197,7 +194,7 @@ app.get('/my_subscriptions', async (req, res) => {
   res.render('my_subs', userInfo);
 });
 
-app.get('/profile', async (req, res) => {
+app.get('/profile', requiresLogin, async (req, res) => {
   console.log('profile called!');
   const userInfo = await usr.loadUser(req.session.user.id);
   // console.log('userINFO', userInfo);
@@ -233,6 +230,15 @@ app.use((req, res) => {
   res.status(404);
   res.render('error', { error: 'Not Found' });
 });
+
+// app.use((error, req, res, next) => {
+//   res.status(error.status || 500).send({
+//     error: {
+//       status: error.status || 500,
+//       message: error.message || 'Internal Server Error',
+//     },
+//   });
+// });
 
 app.listen(80, () => {
   console.log('Listening on port 80.');
