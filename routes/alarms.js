@@ -17,7 +17,11 @@ async function loadCategories() {
   console.log('loading categories...');
   try {
     const response = await es.search(
-      { index: esCategoriesIndex, body: { query: { match_all: {} } } },
+      {
+        index: esCategoriesIndex,
+        size: 1000,
+        body: { query: { match_all: {} } } 
+      },
     );
     if (response.body.hits.total.value === 0) {
       console.log('No categories found.');
@@ -85,7 +89,7 @@ router.post('/', jsonParser, async (req, res) => {
 
   // console.log('Check that the category was registered');
   if (cats.includes(`${b.category}_${b.subcategory}_${b.event}`)) {
-    console.log('category registered');
+    console.debug('category registered');
   } else {
     res.status(400).send('no such category, subcategory or event allowed.');
     return;
@@ -113,10 +117,74 @@ router.get('/categories', async (req, res) => {
   res.json(categories);
 });
 
+router.post('/fetch', jsonParser, async (req, res) => {
+  const b = req.body;
+  // console.log('body:', b);
+  if (b === undefined || b === null || Object.keys(b).length === 0) {
+    res.status(400).send('nothing POSTed.\n');
+    return;
+  }
+  if (b.category === undefined || b.category === null) {
+    res.status(400).send('category is required.\n');
+    return;
+  }
+  if (b.subcategory === undefined || b.subcategory === null) {
+    res.status(400).send('subcategory is required.\n');
+    return;
+  }
+  if (b.event === undefined || b.event === null) {
+    res.status(400).send('event is required.\n');
+    return;
+  }
+  if (b.period === undefined || b.period === null) {
+    res.status(400).send('period is required. Just number of hours.\n');
+    return;
+  }
+  const {
+    category, subcategory, event, period,
+  } = b;
+
+  console.log('Getting alarms in:', category, '/', subcategory, '/', event, '/', period);
+  const alarms = [];
+  try {
+    const response = await es.search(
+      {
+        index: esAlarmsIndex,
+        size: 1000,
+        body: {
+          query: {
+            bool: {
+              must: [
+                { term: { category } },
+                { term: { subcategory } },
+                { term: { event } },
+                { range: { created_at: { gte: `now-${period}h/h` } } },
+              ],
+            },
+          },
+        },
+      },
+    );
+    if (response.body.hits.total.value === 0) {
+      console.log('No alarms found.');
+    } else {
+      const { hits } = response.body.hits;
+      hits.forEach((hit) => {
+        const s = hit._source;
+        // console.log(s);
+        alarms.push(s);
+      });
+    }
+  } catch (err) {
+    console.error(err);
+  }
+  res.json(alarms);
+});
+
 router.post('/category', jsonParser, async (req, res) => {
   const b = req.body;
   console.log('Adding category with body:\n', b);
-  if (b === undefined || b === null || Object.keys(b).length !== 4) {
+  if (b === undefined || b === null || Object.keys(b).length < 4) {
     res.status(400).send('nothing POSTed or data incomplete.\n');
     return;
   }

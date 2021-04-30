@@ -5,7 +5,7 @@ const mrequest = require('request');
 
 console.log('Alarm & Alert Service server starting ... ');
 
-const TEST = true;
+const TEST = false;
 
 let config;
 let globConf;
@@ -14,8 +14,8 @@ if (!TEST) {
   config = require('/etc/aaasf/config.json');
   globConf = require('/etc/aaasf/globus-config.json');
 } else {
-  config = require('./config.json');
-  globConf = require('./globus-config.json');
+  config = require('./kube/secrets/config.json');
+  globConf = require('./kube/secrets/globus-config.json');
 }
 
 console.log(config);
@@ -67,17 +67,14 @@ const auth = `Basic ${bup}`;
 //     next();
 // };
 
-const requiresLogin = async (req, _res, next) => {
+const requiresLogin = async (req, res, next) => {
   // to be used as middleware
-
   if (req.session.loggedIn !== true) {
     console.log('NOT logged in!');
-    const error = new Error('You must be logged in to view this page.');
-    error.status = 403;
-    return next(error);
+    res.redirect('/');
+  } else {
+    next();
   }
-
-  return next();
 };
 
 // =============   routes ========================== //
@@ -89,14 +86,9 @@ const requiresLogin = async (req, _res, next) => {
 
 app.get('/login', async (req, res) => {
   console.log('Logging in');
-  req.session.user = {};
-  req.session.user.id='a51dbd7e-d274-11e5-9b11-9be347a09ce0'
-  const userInfo = await usr.loadUser(req.session.user.id);
-  // console.log('userINFO', userInfo);
-  // TODO logic if returned info is false
-  userInfo.loggedIn = true;
-  userInfo.userId = req.session.user.id;
-  res.render('profile', userInfo);
+  const red = `${globConf.AUTHORIZE_URI}?scope=urn%3Aglobus%3Aauth%3Ascope%3Aauth.globus.org%3Aview_identities+openid+email+profile&state=garbageString&redirect_uri=${globConf.redirect_link}&response_type=code&client_id=${globConf.CLIENT_ID}`;
+  // console.log('redirecting to:', red);
+  res.redirect(red);
 });
 
 app.get('/logout', (req, res) => { // , next
@@ -180,7 +172,7 @@ app.get('/authcallback', (req, res) => {
   });
 });
 
-app.get('/all_alarms', async (req, res) => {
+app.get('/all_alarms', requiresLogin, async (req, res) => {
   console.log(`showing all alarms to user: ${req.session.user_id}`);
   const userInfo = await usr.loadUser(req.session.user.id);
   const categories = await alarms.loadCategories();
@@ -192,7 +184,7 @@ app.get('/all_alarms', async (req, res) => {
   res.render('all_alarms', userInfo);
 });
 
-app.get('/my_subscriptions', async (req, res) => {
+app.get('/my_subscriptions', requiresLogin, async (req, res) => {
   console.log(`showing subscriptions of user: ${req.session.user_id}`);
   const userInfo = await usr.loadUser(req.session.user.id);
   // console.log('userINFO', userInfo);
@@ -202,7 +194,7 @@ app.get('/my_subscriptions', async (req, res) => {
   res.render('my_subs', userInfo);
 });
 
-app.get('/profile', async (req, res) => {
+app.get('/profile', requiresLogin, async (req, res) => {
   console.log('profile called!');
   const userInfo = await usr.loadUser(req.session.user.id);
   // console.log('userINFO', userInfo);
@@ -238,6 +230,15 @@ app.use((req, res) => {
   res.status(404);
   res.render('error', { error: 'Not Found' });
 });
+
+// app.use((error, req, res, next) => {
+//   res.status(error.status || 500).send({
+//     error: {
+//       status: error.status || 500,
+//       message: error.message || 'Internal Server Error',
+//     },
+//   });
+// });
 
 app.listen(80, () => {
   console.log('Listening on port 80.');
