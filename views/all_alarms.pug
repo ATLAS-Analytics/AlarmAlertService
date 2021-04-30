@@ -162,8 +162,6 @@ block extra_scripts
                 subdata.push(final[i])
             };
             console.log(subdata)
-
-            subdata.push({'category': 'Placing','subcategory': 'Deleting','event': 'Works'})
         
             var toSend = JSON.stringify(subdata)
             if (subdata.length == 0) {
