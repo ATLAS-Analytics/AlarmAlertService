@@ -21,7 +21,7 @@ block content
                     button#logout_button.btn.btn-primary Logout 
                     br
                     br
-                    button#user_delete_button.btn.btn-primary Delete
+                    //button#user_delete_button.btn.btn-primary Delete
                                
                     
                 .col-lg-6.mx-auto
@@ -31,6 +31,15 @@ block content
                     | <h4> Vacation &nbsp;
                     input( id='vacation' type='checkbox' width='20px' checked=preferences.vacation )
                     div
+                    | <h4> Time Interval to Receive Alerts &nbsp;
+                    select(id='interval' width='4px')
+                        option(value='1') 1 Hour Intervals
+                        option(value='2') 2 Hour Intervals
+                        option(value='4') 4 Hour Intervals
+                        option(value='8') 8 Hour Intervals
+                        option(value='12') 12 Hour Intervals
+                        option(value='24') 24 Hour Intervals
+                    br
                     br
                     button#update_preferences_button.btn.btn-primary Update Preferences
 
@@ -57,7 +66,7 @@ block extra_scripts
         //-         });
         //-     });
         //- }());
-
+        
         ( function () {
             $('#update_preferences_button').click((event) => {
                 event.preventDefault();
@@ -65,6 +74,8 @@ block extra_scripts
 
                 const data = {};
                 data.vacation = $('#vacation').is(':checked');
+                var dropdown = document.getElementById('interval');
+                data.mail_interval = dropdown.value*3600;
                 const toSend=JSON.stringify(data);
                 console.log('toSend',toSend);
                 let jqxhr = $.ajax({
@@ -74,12 +85,14 @@ block extra_scripts
                 data: toSend,
                 success() {
                     console.log('success');
-                    window.location.href = '/';
+                    //window.location.href = '/profile';
                 },
                 error(xhr, textStatus, errorThrown) {
                     alert(`Error code:${xhr.status}.${xhr.responseText}`);
-                    window.location.href = '/';
+                    //window.location.href = '/profile';
                 }
                 });
+                setTimeout(location.reload.bind(location), 150);
+
             });
         }());
