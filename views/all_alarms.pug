@@ -18,6 +18,7 @@ block content
             br
             br
             br
+            div(id='deletedsub')
             h2 My Current Subscriptions
             table#subscriptions_table.display(style='width:80%')
                 thead
@@ -49,6 +50,16 @@ block extra_scripts
 
         var catdata = !{JSON.stringify(categories)};
         var subdata = !{JSON.stringify(subscriptions)}
+
+        for (i=0; i<subdata.length; i++) {
+            for (j=0; j<catdata.length; j++) {
+                if (subdata[i] === catdata[j]) {
+                    var deletedsubs = document.getElementById('deletedsubs')
+                    deletedsubs.innerHTML = ''
+                    deletedsubs.innerHTML = 'Your current subscription was either renamed or deleted. Upon updating your selected alarms, this alarm will no longer be a part of your current subscriptions.'
+                }
+            }
+        }
         console.log(subdata)
         for (i=0; i<subdata.length; i++) {
             subdata[i] = {"category":subdata[i].category,"subcategory":subdata[i].subcategory,"event":subdata[i].event};
@@ -151,6 +162,8 @@ block extra_scripts
                 subdata.push(final[i])
             };
             console.log(subdata)
+
+            subdata.push({'category': 'Placing','subcategory': 'Deleting','event': 'Works'})
         
             var toSend = JSON.stringify(subdata)
             if (subdata.length == 0) {
