@@ -20,7 +20,7 @@ async function loadCategories() {
       {
         index: esCategoriesIndex,
         size: 1000,
-        body: { query: { match_all: {} } } 
+        body: { query: { match_all: {} } },
       },
     );
     if (response.body.hits.total.value === 0) {
