@@ -37,8 +37,8 @@ async function loadCategories() {
       cats.push(`${s.category}_${s.subcategory}_${s.event}`);
     });
 
-    console.debug(categories);
-    console.debug(cats);
+    // console.debug(categories);
+    // console.debug(cats);
     return categories;
   } catch (err) {
     console.error(err);
@@ -55,7 +55,7 @@ function init(configuration) {
 
 router.post('/', jsonParser, async (req, res) => {
   const b = req.body;
-  console.log('body:', b);
+  // console.debug('body:', b);
   if (b === undefined || b === null || Object.keys(b).length === 0) {
     res.status(400).send('nothing POSTed.\n');
     return;
@@ -89,7 +89,7 @@ router.post('/', jsonParser, async (req, res) => {
 
   // console.log('Check that the category was registered');
   if (cats.includes(`${b.category}_${b.subcategory}_${b.event}`)) {
-    console.debug('category registered');
+    // console.debug('category registered');
   } else {
     res.status(400).send('no such category, subcategory or event allowed.');
     return;
