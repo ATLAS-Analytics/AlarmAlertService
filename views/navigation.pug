@@ -2,17 +2,16 @@ nav#mainNav.navbar.navbar-expand-lg.fixed-top(style='background-image: linear-gr
   .navcontainer
     block up_left_logo
       a.navbar-brand(href='https://github.com/ATLAS-Analytics')
-        img.d-inline-block.align-top(src='images/aaas_new.png' width='65' height='65' alt='')
-        | #{Title}
+        img.d-inline-block.align-top(src='images/a&a.png' width='125' height='65' alt='')
   .container
     button.navbar-toggler(type='button' data-toggle='collapse' data-target='#navbarResponsive' aria-controls='navbarResponsive' aria-expanded='false' aria-label='Toggle navigation')
       span.navbar-toggler-icon
     #navbarResponsive.collapse.navbar-collapse
       ul.navbar-nav.ml-middle
 
-        li.nav-item
-          a.nav-link(href='/') <h5> Home </h5>
-        | &nbsp;
+        //- li.nav-item
+        //-   a.nav-link(href='/') <h5> Home </h5>
+        //- | &nbsp;
 
         if (!loggedIn)
           li.login_button.nav-item
