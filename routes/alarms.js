@@ -102,7 +102,7 @@ router.post('/', jsonParser, async (req, res) => {
     body: b,
   }, (err, response) => {
     if (err) {
-      console.error('cant index alarm:\n', err);
+      console.error('cant index alarm:\n', b, err);
       res.status(500).send(`something went wrong:\n${err}`);
     } else {
       console.log('New alarm indexed.');

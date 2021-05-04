@@ -40,7 +40,7 @@ async function loadUser(userId = null) {
           [, obj.preferences[key]] = value;
         }
       });
-      console.log(obj);
+      console.debug(obj.user);
       return obj;
     }
 
