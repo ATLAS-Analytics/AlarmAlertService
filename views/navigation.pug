@@ -1,42 +1,43 @@
-nav#mainNav.navbar.navbar-expand-lg.fixed-top(style='background-image: linear-gradient(#04519b, #044687 60%, #033769);')
-  .navcontainer
-    block up_left_logo
+nav#mainNav.navbar.navbar-inverse
+  div.container-fluid
+    div.navbar-header
       a.navbar-brand(href='https://github.com/ATLAS-Analytics')
         img.d-inline-block.align-top(src='images/a&a.png' width='125' height='65' alt='')
-  .container
-    button.navbar-toggler(type='button' data-toggle='collapse' data-target='#navbarResponsive' aria-controls='navbarResponsive' aria-expanded='false' aria-label='Toggle navigation')
-      span.navbar-toggler-icon
-    #navbarResponsive.collapse.navbar-collapse
-      ul.navbar-nav.ml-middle
+
+    ul.navbar-nav
+      li 
+        p.navbar-text.nav-item
+          a(href='./') Home
+      if (loggedIn)
+        li
+          p.navbar-text.nav-item
+            a(href='/all_alarms') All Alarms and Subscriptions
+
+    ul.navbar-nav.navbar-right
+      if (!loggedIn)
+        li.login_button.active
+          p.navbar-text.nav-item
+            a(href='/login') 
+              span.glyphicon.glyphicon-log-in
+              | 
+              | Login
+
+      if (loggedIn)
+        li.profile_button
+          p.navbar-text.nav-item
+            a(href='/profile') Profile
+
+      
+
+        //- li.nav-item.dropdown
+        //- a#navbarDropdown.nav-link.dropdown-toggle(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false')
+        //-   | All alarms
+        //- .dropdown-menu(aria-labelledby='navbarDropdown')
+        //-   if (loggedIn)
+        //-     a.dropdown-item(href='/networking') Networking
+        //-     a.dropdown-item(href='/computing') Computing
+        //-     a.dropdown-item(href='/analytics') Analytics
 
         //- li.nav-item
-        //-   a.nav-link(href='/') <h5> Home </h5>
+          a.nav-link(href='/my_subscriptions') <h5>My Subscriptions</h5>
         //- | &nbsp;
-
-        if (!loggedIn)
-          li.login_button.nav-item
-            a.nav-link(href='/login') <h5>Login</h5>
-          | &nbsp;
-        
-        if (loggedIn)
-
-          li.nav-item
-            a.nav-link(href='/all_alarms') <h5>All Alarms and Subscriptions</h5>
-          | &nbsp;
-
-          //- li.nav-item.dropdown
-          //- a#navbarDropdown.nav-link.dropdown-toggle(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false')
-          //-   | All alarms
-          //- .dropdown-menu(aria-labelledby='navbarDropdown')
-          //-   if (loggedIn)
-          //-     a.dropdown-item(href='/networking') Networking
-          //-     a.dropdown-item(href='/computing') Computing
-          //-     a.dropdown-item(href='/analytics') Analytics
-
-          //- li.nav-item
-            a.nav-link(href='/my_subscriptions') <h5>My Subscriptions</h5>
-          //- | &nbsp;
-
-          li.profile_button.nav-item
-            a.nav-link(href='/profile') <h5>Profile</h5>
-          | &nbsp;

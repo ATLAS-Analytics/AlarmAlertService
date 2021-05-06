@@ -1,49 +1,14 @@
-/*!
- * Start Bootstrap - Scrolling Nav (https://startbootstrap.com/template-overviews/scrolling-nav)
- * Copyright 2013-2017 Start Bootstrap
- * Licensed under MIT (https://github.com/BlackrockDigital/startbootstrap-scrolling-nav/blob/master/LICENSE)
- */
-nav a {
-  color: white;
-}
-nav a:hover {
-  color: black;
-}
-h2 {
-  color: #317eac;
-}
-.card-header {
-  color: #317eac;
-}
-
-header {
-  /* padding: 154px 0 100px; */
-  background: url('images/s2i2-banner.jpg') no-repeat;
-  background-size: cover;
-}
-
-header .container {
-  background-color: rgba(0,0,0, 0.7);
-  padding: 20px;
-  /* width: 60%; */
-}
-
-header .container p {
-  font-size: 21px;
-  line-height: 1.33;
-  opacity: 0.75;
-}
 header .container h1 {
   font-family: "HelveticaNeue-CondensedBold",
-  "Helvetica Neue CE 600 Condensed",
-  "Helvetica Neue LT Condensed",
-  "Helvetica Neue 600 Condensed",
-  "HelveticaNeue-BoldCondensed",
-  "Helvetica Neue BoldCondensed",
-  "Helvetica Neue",
-  Helvetica,
-  Arial,
-  sans-serif;
+    "Helvetica Neue CE 600 Condensed",
+    "Helvetica Neue LT Condensed",
+    "Helvetica Neue 600 Condensed",
+    "HelveticaNeue-BoldCondensed",
+    "Helvetica Neue BoldCondensed",
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
+    sans-serif;
   font-size: 60px;
   font-stretch: condensed;
   font-weight: 700;
@@ -52,15 +17,9 @@ header .container h1 {
   text-transform: uppercase;
 }
 
-@media (min-width: 992px) {
-  header {
-    padding: 156px 0 100px;
-  }
-}
-
-section {
+/* section {
   padding: 50px 0;
-}
+} */
 
 .lead {
   font-size: 1.0rem;
@@ -69,76 +28,34 @@ section {
 hr {
   width: 80%;
   color: white;
-  background-color: #f8f9fa!important;
+  background-color: #f8f9fa !important;
 }
 
 #gtco-header {
   padding-top: 100px;
 }
-/*--------------------------------------------------------------
-# Back to Top Button
---------------------------------------------------------------*/
-
-.back-to-top {
-  position: fixed;
-  display: none;
-  /*background: rgba(0, 0, 0, 0.2);*/
-  background: rgba(0,123,255, 0.5);
-  color: #fff;
-  padding: 6px 12px 9px 12px;
-  font-size: 16px;
-  border-radius: 2px;
-  right: 15px;
-  bottom: 15px;
-  transition: background 0.3s;
-}
-
-@media (max-width: 768px) {
-  .back-to-top {
-    bottom: 15px;
-  }
-}
-
-.back-to-top:focus {
-  /*background: rgba(0, 0, 0, 0.2);*/
-  background: rgba(0,123,255, 0.5);
-  color: #fff;
-  outline: none;
-}
-
-.back-to-top:hover {
-  background: #007bff;
-  color: #fff;
-}
-
-xmp {
-white-space: pre-wrap;/* css-3 problematic browser support */
-}
-
-.h2,h2 {
-  margin-bottom: 1rem;
-}
-
-.navcontainer {
-  margin-left: 0%;
-}
-
-.ml-middle {
-  margin-left:30%
-}
 
 .nav-link {
-  cursor: pointer;
-  font-size: 16px;  
-  border: 2px solid #0b012e;
-  outline: none;
-  color: #ffffff;
-  padding: 14px 16px;
-  background-color: #044687;
-  font-family: inherit;
-  margin: 0;
+  /* cursor: pointer; */
+  font-size: 24px;
+  /* border: 2px solid #0b012e; */
+  /* outline: none; */
+  /* color: #ffffff; */
+  /* padding: 14px 16px; */
+  /* background-color: #044687; */
+  /* font-family: inherit; */
+  /* margin: 0; */
+}
+
+.nav-item {
+  font-size: 24px;
+}
+
+.navbar-brand {
+  height: 65px;
+  padding: 0px;
 }
 
 .btn {
-  float:right;
+  float: right;
 }

@@ -49,24 +49,6 @@ app.use('/alarm', alarms.router);
 const bup = Buffer.from(`${globConf.CLIENT_ID}:${globConf.CLIENT_SECRET}`).toString('base64');
 const auth = `Basic ${bup}`;
 
-// const jupyterCreator = async (req, res, next) => {
-//   if (
-//     typeof req.body.name !== undefined && req.body.name
-//     && typeof req.body.password !== undefined && req.body.password
-//     && typeof req.body.gpus !== undefined && req.body.gpus
-//     && typeof req.body.time !== undefined && req.body.time
-//   ) {
-//     console.log('Creating a private JupyterLab.');
-//     try {
-//       req.body.time = parseInt(req.body.time, 10);
-//       req.body.gpus = parseInt(req.body.gpus, 10);
-//     } catch (error) {
-//       res.sendStatus(400).send('unparseable parameters.');
-//       return;
-//     }
-//     next();
-// };
-
 const requiresLogin = async (req, res, next) => {
   // to be used as middleware
   if (req.session.loggedIn !== true) {
@@ -76,13 +58,6 @@ const requiresLogin = async (req, res, next) => {
     next();
   }
 };
-
-// =============   routes ========================== //
-
-// app.get('/delete/:jservice', requiresLogin, (request, response) => {
-//   const { jservice } = request.params;
-//   response.redirect('/');
-// });
 
 app.get('/login', async (req, res) => {
   console.log('Logging in');
