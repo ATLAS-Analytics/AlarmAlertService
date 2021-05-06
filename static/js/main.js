@@ -76,63 +76,10 @@
     $('.gtco-loader').fadeOut('slow');
   };
 
-  $('#private_jupyter_create_button').click((event) => {
-    event.preventDefault();
-    console.log('Private jupyter creator called.');
-
-    $('#name_valid').text('').show();
-    $('#pass_valid').text('').show();
-
-    const data = {};
-    if ($('#name').val() === '') {
-      $('#name_valid').text('Name is mandatory!').show();
-      return;
-    }
-    else {
-      var inp = $('#name').val();
-      inp = inp.toLowerCase();
-      inp = inp.replace(' ', '-');
-      inp = inp.replace('.', '-');
-      inp = inp.replace(':', '-');
-      inp = inp.replace('_', '-');
-      $('#name').val(inp);
-    }
-    if ($('#password').val() === '') {
-      $('#pass_valid').text('Password is mandatory!').show();
-      return;
-    }
-
-    data['name'] = inp;
-    data['password'] = $('#password').val();
-    data['time'] = $('#allocation').val();
-    data['gpus'] = $('#gpus').val();
-    data['cpus'] = $('#cpus').val();
-    data['memory'] = $('#memory').val();
-    data['repository'] = $('#customgit').val();
-    data['image'] = $('#imageselection').val();
-    console.log(data);
-    // call REST API to create a Private Jupyter Instance
-    let jqxhr = $.ajax({
-      type: 'post',
-      url: '/jupyter',
-      contentType: 'application/json',
-      data: JSON.stringify(data),
-      success: function (link) {
-        alert('It can take several minutes after service status changes to "running" for the service to become available.');
-        window.location.href = '/private_jupyter_lab_manage';
-      },
-      error: function (xhr, textStatus, errorThrown) {
-        alert('Error code:' + xhr.status + '.  ' + xhr.responseText);
-        window.location.href = '/private_jupyter_lab_manage';
-      }
-    });
-  });
-
   $('#logout_button').click(() => {
     $.get('/logout');
     window.location.replace('/');
   });
-
 
   $(() => {
     dropdown();

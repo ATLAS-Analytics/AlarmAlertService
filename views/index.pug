@@ -5,13 +5,15 @@ html
         include ./navigation.pug
 
         block content
-            .row
-                .col-lg-5.mx-auto
-                    h1 Default Title
-                    p.lead
-                    | Please overwrite this.
-                .col-lg-4.mx-auto
-                    img(src='images/cube.png', style='width:40%;')
+            .container 
+                .row
+                    .col-lg-6.mx-auto
+                        h1 Default Title
+                        p.lead
+                        | Please overwrite this.
+                    .col-lg-2.mx-auto
+                    .col-lg-4.mx-auto
+                        asdf
 
         block footer
             include ./footer.pug
