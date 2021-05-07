@@ -160,7 +160,13 @@ app.get('/all_alarms', requiresLogin, async (req, res) => {
 });
 
 app.get('/docs', async (req, res) => {
-  res.render('docs');
+  if (req?.session?.user?.id === undefined){
+    res.render('docs')
+  }
+  else{
+    const userInfo = {loggedIn:true}
+    res.render('docs', userInfo);
+  }
 });
 
 app.get('/my_subscriptions', requiresLogin, async (req, res) => {
