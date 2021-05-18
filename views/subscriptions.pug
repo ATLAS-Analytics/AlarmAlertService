@@ -1,38 +1,36 @@
 extends ./index.pug
 
 block content
-    section#gtco-header.bg-light
-        .container
-            .row
-                .col-lg-5.mx-auto
-                    h2 Alarms
-                    div(id="SimpleJSTree")
-                    button#jstree_button.btn.btn-primary Update Selected Alarms
+    .container
+        .row
+            .col-lg-5.mx-auto
+                h2 Alarms
+                div(id="SimpleJSTree")
+                button#jstree_button.btn.btn-primary Update Selected Alarms
 
-                .col-lg-6.mx-auto
-                    h2 Details
-                    div(id="description")
-                        h5 Hover over an Event to Have its Description Appear Here
-                    br
-            br
-            br
-            br
-            br
-            div(id='deletedsub')
-            h2 My Current Subscriptions
-            table#subscriptions_table.display(style='width:80%')
-                thead
-                    tr
-                        th Category
-                        th Subcategory
-                        th Event
-                each s in subscriptions
-                    tr
-                        td= s.category
-                        td= s.subcategory
-                        td= s.event  
-                        //- input( id='vacation' type='checkbox' checked=true )
-                div
+            .col-lg-6.mx-auto
+                h2 Details
+                div(id="description")
+                    h5 Hover over an Event to Have its Description Appear Here
+                br
+        br
+        br
+        br
+        br
+        div(id='deletedsub')
+        h2 My Current Subscriptions
+        table#subscriptions_table.display(style='width:80%')
+            thead
+                tr
+                    th Category
+                    th Subcategory
+                    th Event
+            each s in subscriptions
+                tr
+                    td= s.category
+                    td= s.subcategory
+                    td= s.event  
+            div
 
 block extra_scripts
     script.

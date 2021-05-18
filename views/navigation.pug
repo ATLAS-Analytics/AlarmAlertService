@@ -11,10 +11,13 @@ nav#mainNav.navbar.navbar-inverse
       li 
         p.navbar-text.nav-item
           a(href='/docs') Docs
+      li 
+        p.navbar-text.nav-item
+          a(href='/alarms') Alarms
       if (loggedIn)
         li
           p.navbar-text.nav-item
-            a(href='/all_alarms') All Alarms and Subscriptions
+            a(href='/subscriptions') Subscriptions
 
     ul.navbar-nav.navbar-right
       if (!loggedIn)

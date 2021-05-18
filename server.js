@@ -147,7 +147,7 @@ app.get('/authcallback', (req, res) => {
   });
 });
 
-app.get('/all_alarms', requiresLogin, async (req, res) => {
+app.get('/subscriptions', requiresLogin, async (req, res) => {
   console.log(`showing all alarms to user: ${req.session.user_id}`);
   const userInfo = await usr.loadUser(req.session.user.id);
   const categories = await alarms.loadCategories();
@@ -156,27 +156,21 @@ app.get('/all_alarms', requiresLogin, async (req, res) => {
   userInfo.loggedIn = true;
   userInfo.userId = req.session.user.id;
   userInfo.categories = categories;
-  res.render('all_alarms', userInfo);
+  res.render('subscriptions', userInfo);
+});
+
+app.get('viewer', (req,res)=>{
+  res.render('viewer');
 });
 
 app.get('/docs', async (req, res) => {
   if (req?.session?.user?.id === undefined){
-    res.render('docs')
+    res.render('docs');
   }
   else{
     const userInfo = {loggedIn:true}
     res.render('docs', userInfo);
   }
-});
-
-app.get('/my_subscriptions', requiresLogin, async (req, res) => {
-  console.log(`showing subscriptions of user: ${req.session.user_id}`);
-  const userInfo = await usr.loadUser(req.session.user.id);
-  // console.log('userINFO', userInfo);
-  // TODO logic if returned info is false
-  userInfo.loggedIn = true;
-  userInfo.userId = req.session.user.id;
-  res.render('my_subs', userInfo);
 });
 
 app.get('/profile', requiresLogin, async (req, res) => {
