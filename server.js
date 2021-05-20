@@ -159,8 +159,13 @@ app.get('/subscriptions', requiresLogin, async (req, res) => {
   res.render('subscriptions', userInfo);
 });
 
-app.get('viewer', (req,res)=>{
-  res.render('viewer');
+app.get('/viewer', async (req,res)=>{
+  const data = {};
+  data.categories = await alarms.loadCategories();
+  if (req?.session?.user?.id !== undefined){
+    data.loggedIn = true;
+  }
+  res.render('viewer', data);
 });
 
 app.get('/docs', async (req, res) => {

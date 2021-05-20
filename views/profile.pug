@@ -4,42 +4,30 @@ block content
     .container
         .row
             .col-lg-5.mx-auto
-                h2 Profile                 
-                div
-                .card(style='width: 18rem;')
-                .card-body
-                | <h5> Name: </h5>
-                p#name.card-text #{user}
-                div
-                | <h5> Email: </h5>
-                p#email.card-text #{email}
-                div
-                | <h5> Organization: </h5>
-                p#affiliation.card-text #{affiliation}
-                
+                h1 Profile  
+                dl 
+                    dt Name:
+                    dd #{user}
+                    dt Email:
+                    dd #{email}
+                    dt Organization:
+                    dd #{affiliation}
                 button#logout_button.btn.btn-primary Logout 
-                br
-                br
-                //button#user_delete_button.btn.btn-primary Delete
                             
-                
             .col-lg-6.mx-auto
-                h2 Preferences
-                .card(style='width: 18rem;')
-                .card-body
-                | <h4> Vacation &nbsp;
-                input( id='vacation' type='checkbox' width='20px' checked=preferences.vacation )
-                div
-                | <h4> Time Interval to Receive Alerts &nbsp;
-                select(id='interval' width='4px')
-                    option(value='1') 1 Hour Intervals
-                    option(value='2') 2 Hour Intervals
-                    option(value='4') 4 Hour Intervals
-                    option(value='8') 8 Hour Intervals
-                    option(value='12') 12 Hour Intervals
-                    option(value='24') 24 Hour Intervals
-                br
-                br
+                h1 Preferences
+                ul.list-group.list-group-flush    
+                    li.list-group-item Vacation &nbsp; 
+                        input( id='vacation' type='checkbox' width='20px' checked=preferences.vacation )
+                    li.list-group-item Time Interval to Receive Alerts &nbsp;
+                        select(id='interval' width='4px')
+                            option(value='1') 1 Hour Intervals
+                            option(value='2') 2 Hour Intervals
+                            option(value='4') 4 Hour Intervals
+                            option(value='8') 8 Hour Intervals
+                            option(value='12') 12 Hour Intervals
+                            option(value='24') 24 Hour Intervals
+                            
                 button#update_preferences_button.btn.btn-primary Update Preferences
 
 block extra_scripts

@@ -31,9 +31,9 @@ hr {
   background-color: #f8f9fa !important;
 }
 
-#gtco-header {
+/* #gtco-header {
   padding-top: 100px;
-}
+} */
 
 .nav-link {
   /* cursor: pointer; */
@@ -56,6 +56,6 @@ hr {
   padding: 0px;
 }
 
-.btn {
+/* .btn {
   float: right;
-}
+} */
