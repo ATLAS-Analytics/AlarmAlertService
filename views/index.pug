@@ -8,13 +8,27 @@ html
             .container 
                 .row
                     .col-lg-6.mx-auto
-                        h1 Default Title
+                        h1 ATLAS Alarm And Alert 
                         p.lead
-                        | Please overwrite this.
-                    .col-lg-2.mx-auto
-                    .col-lg-4.mx-auto
-                        iframe(src="https://atlas-kibana.mwt2.org:5601/s/aaas/app/visualize?auth_provider_hint=anonymous1#/edit/2513afb0-28de-11eb-8f92-953711258120?embed=true&_g=(filters%3A!()%2CrefreshInterval%3A(pause%3A!t%2Cvalue%3A0)%2Ctime%3A(from%3Anow-7d%2Cto%3Anow))" height="300" width="400" frameBorder="0")
+                        | This platform provides a simple way to store generated alarms, handles users subscriptions and
+                        | generates alerts. 
+                        h2 Components  
+                        dl 
+                            dt Database
+                            dd Elasticsearch
+                            dt REST API and Web frontend
+                            dd Node.js + express + pug
+                            dt Deployment 
+                            dd Docker, K8s, Helm (soon)
+                            dt Authentication 
+                            dd Globus InCommon
+                            dt Authorization 
+                            dd API key
+                        iframe(src="https://atlas-kibana.mwt2.org:5601/s/aaas/app/visualize?auth_provider_hint=anonymous1#/edit/2513afb0-28de-11eb-8f92-953711258120?embed=true&_g=(time%3A(from%3Anow-1d%2Cto%3Anow))" height="300" width="400" frameBorder="0")
 
+                    .col-lg-6.mx-auto
+                        img.img-fluid(src='images/AlarmAndAlert.png' style='max-width: 80%; height: auto' alt='Alarm and Alert schema')
+                       
 
         block footer
             include ./footer.pug
