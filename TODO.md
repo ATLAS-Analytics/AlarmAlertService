@@ -1,7 +1,7 @@
-* make topology appear in header.
+* Tree selection should only affect datatable (no reload). Datatable button should save things .
+* make Alarm page use parameters if given
+* obey mail frequency preference
+* to Alarm page add table with alarm details
+* add alarm link to emails
+* add examples to create alert using curl and python. 
 * before updating preferences, subscriptions, check that userid exists.
-* change indices that hold alerts
-* make Alert dropdown populate from the index
-* update logos
-* make Home page
-* users don't need mailgun - that will be needed for cronjob alert generator.
