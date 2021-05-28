@@ -27,7 +27,6 @@ block extra_scripts
         $('[data-toggle="tooltip"]').tooltip();
         var catdata = !{JSON.stringify(categories)};
         var subdata = !{JSON.stringify(subscriptions)};
-        console.log("subdata:", subdata);
 
         ( function () {
             var table = $('#subscriptions_table').DataTable({
@@ -88,7 +87,6 @@ block extra_scripts
         };
 
 
-        
         //- sets what's selected and what not
 
         for (i=0; i<treedata.length; i+=3) {
@@ -154,6 +152,7 @@ block extra_scripts
                     }
                 })
             }
+            
             var st=$('#subscriptions_table').DataTable();
             oldData=st.data().toArray();
             console.log('newdata', newData);
@@ -185,11 +184,6 @@ block extra_scripts
                 $('#' + data.node.id).attr('title', data.node.data);
             };
         });       
-
-        console.log("Categories:", catdata);
-
-        });
-
         
         $('#dtButton').click((event) => {
             subdata=$('#subscriptions_table').DataTable().data().toArray();
