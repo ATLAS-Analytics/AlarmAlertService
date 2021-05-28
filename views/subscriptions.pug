@@ -169,7 +169,13 @@ block extra_scripts
                         }
                     })
                     if (found === false){
-                        nd.push(nr);
+                        var cleanedNR = {
+                            category:nr['category'],
+                            subcategory:nr['subcategory'],
+                            event:nr['event'],
+                            tags:'*'
+                        };
+                        nd.push(cleanedNR);
                     }
                 })
             }else{ // removing 
