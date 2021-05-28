@@ -17,7 +17,7 @@ block content
                 table#subscriptions_table.display(style='width:100%')
                 br
                 br
-                button#dtButton.btn.btn-primary Update Tags Selections
+                button#dtButton.btn.btn-primary Update Subscription
         br
         div(id='deletedsub')
 
@@ -159,9 +159,20 @@ block extra_scripts
             console.log('olddata', oldData);
             
             var nd=[];
-            if (selected === true){
-                nd=oldData.concat(newData);
-            }else{
+            if (selected === true){ // adding
+                nd=nd.concat(oldData);
+                newData.forEach(nr=>{
+                    var found=false;
+                    oldData.forEach(or=>{
+                        if (nr['category'] === or['category'] && nr['subcategory'] === or['subcategory'] && nr['event']===or['event']){
+                            found=true;
+                        }
+                    })
+                    if (found === false){
+                        nd.push(nr);
+                    }
+                })
+            }else{ // removing 
                 oldData.forEach(or=>{
                     var found=false;
                     newData.forEach(nr=>{

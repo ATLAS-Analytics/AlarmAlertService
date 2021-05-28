@@ -1,4 +1,3 @@
-* Tree selection should only affect datatable (no reload). Datatable button should save things .
 * make Alarm page use parameters if given
 * obey mail frequency preference
 * to Alarm page add table with alarm details
