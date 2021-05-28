@@ -19,7 +19,7 @@ block content
                 br
                 button#dtButton.btn.btn-primary Update Subscription
         br
-        div(id='deletedsub')
+        div(id='dsp')
 
          
 block extra_scripts
@@ -187,6 +187,49 @@ block extra_scripts
             }
             st.clear().rows.add(nd).draw();
         });
+        
+        $(function () {
+            deleted = []
+            current = []
+            console.log(subdata)
+            if (subdata.length = 1) {
+                if (subdata[0].category == null) {
+                    console.log('no sub data')
+                }
+            }
+            else {
+                for (i=0; i<subdata.length; i++) {
+                    for (j=0; j<catdata.length; j++) {
+                        if (subdata[i].category == catdata[j].category) {
+                            if (subdata[i].subcategory == catdata[j].subcategory) {
+                                if (subdata[i].event == catdata[j].event) {
+                                    console.log('test',subdata[i],catdata)
+                                    current.push(subdata[i])
+                                    console.log(current)
+                                    i = i+1
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            deleted = subdata.filter(n=> !current.includes(n))
+            for (i=0; i<deleted.length; i++) {
+                if (deleted[i].category == null) {
+                    deleted.splice(i,1)
+                }
+            }
+            console.log('deleted',deleted)
+            console.log('current', current)
+            if (deleted.length > 0) {
+                var dsp = document.getElementById('dsp')
+                var html = '<h4>Your following subscriptions have been changed or deleted:</h4><br>';
+                for (i=0; i<deleted.length; i++) {
+                    html += 'Category = ' + deleted[i].category + ' | Subcategory = ' + deleted[i].subcategory + ' | Event = ' + deleted[i].event + '<br>';
+                }
+                dsp.innerHTML = html;    
+            }
+        });
 
         $('#SimpleJSTree').bind("hover_node.jstree", function(e, data) {
             //- console.log('data', data);
@@ -195,7 +238,6 @@ block extra_scripts
                 $('#' + data.node.id).attr('title', data.node.data);
             };
         });       
-        
         $('#dtButton').click((event) => {
             subdata=$('#subscriptions_table').DataTable().data().toArray();
             toSend=JSON.stringify(subdata);
