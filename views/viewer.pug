@@ -20,6 +20,8 @@ block content
                 //- iframe(src="https://atlas-kibana.mwt2.org:5601/s/aaas/app/visualize?auth_provider_hint=anonymous1#/edit/2066f290-b80f-11eb-89e4-591876ef80c0?embed=true&_g=(filters%3A!()%2CrefreshInterval%3A(pause%3A!t%2Cvalue%3A0)%2Ctime%3A(from%3Anow-7d%2Cto%3Anow))" height="200" width="800" frameBorder="0")
                 iframe#alarmsInTime(src="https://atlas-kibana.mwt2.org:5601/s/aaas/app/visualize?auth_provider_hint=anonymous1#/edit/d67271c0-28dd-11eb-8f92-953711258120?embed=true&_g=(time%3A(from%3Anow-7d%2Cto%3Anow))")
                 //-  height="600" width="1000" frameBorder="0" allowfullscreen="true"
+            p.lead 
+            table#alarms_table.display(style='width:100%')
 
 block extra_scripts
     script.
@@ -126,4 +128,49 @@ block extra_scripts
                 }
             ]
         });
-      
+
+        ( function () {
+            var table = $('#alarms_table').DataTable({
+                paging: true,
+                searching: true,
+                ajax:{
+                    type: 'POST',
+                    url: '/alarm/fetch',
+                    contentType: 'application/json',
+                    data: function ( d ) {
+                        return JSON.stringify({
+                            category:"WFMS", 
+                            subcategory:"User", 
+                            event:"Too much walltime consumed", 
+                            period: 24
+                        });
+                    },
+                    dataSrc: '',
+                    error(xhr, textStatus, errorThrown) {
+                        alert(`Error code:${xhr.status}.${xhr.responseText}`);
+                    }
+                },
+                columns: [
+                    {title:'Created', data: 'created_at'},
+                    {title:'Body', data: 'body'},
+                    {title:'Tags', data: 'tags'},
+                    {title:'Source', data: 'source'},
+                    {title:"Annotation", data: 'annotation',
+                        render: function (data, type, row) {
+                                //- console.log('data:',data,'row:',row );
+                                if (row.annotation === undefined){row.annotation = '';}
+                                return '<input class="form-control annInput" name="Annotations" type="text" value = ' + row.annotation + ' >';
+                            }
+                    },
+                ],
+
+                //- "drawCallback": function( settings ) {
+                //-   $(".annInput").on("change",function(){
+                //-        var $row = $(this).parents("tr");
+                //-        var rowData = table.row($row).data();
+                //-        rowData.tags = $(this).val();
+                //-        console.log('row changed', rowData);
+                //-   })
+                //- },
+            });
+        }());
