@@ -1,39 +1,24 @@
-nav#mainNav.navbar.navbar-inverse
-  div.container-fluid
-    div.navbar-header
-      a.navbar-brand(href='https://github.com/ATLAS-Analytics')
-        img.d-inline-block.align-top(src='images/a&a.png' width='125' height='65' alt='')
+nav#mainNav.navbar.navbar-dark.bg-dark.sticky-top
+  a.navbar-brand(href='https://github.com/ATLAS-Analytics')
+    img.d-inline-block.align-top(src='images/a&a.png' width='125' height='65' alt='')
+  nav.nav
+    a.nav-link(href='./') Home
+    a.nav-link(href='/docs') Docs
+    a.nav-link(href='/viewer') Alarms
+    if (loggedIn)
+      a.nav-link(href='/subscriptions') Subscriptions
 
-    ul.navbar-nav
-      li 
-        p.navbar-text.nav-item
-          a(href='./') Home
-      li 
-        p.navbar-text.nav-item
-          a(href='/docs') Docs
-      li 
-        p.navbar-text.nav-item
-          a(href='/viewer') Alarms
-      if (loggedIn)
-        li
-          p.navbar-text.nav-item
-            a(href='/subscriptions') Subscriptions
+  nav.nav.navbar-right
+    if (!loggedIn)
+      a.nav-link(href='/login') 
+        span.glyphicon.glyphicon-log-in
+        | 
+        | Login
 
-    ul.navbar-nav.navbar-right
-      if (!loggedIn)
-        li.login_button.active
-          p.navbar-text.nav-item
-            a(href='/login') 
-              span.glyphicon.glyphicon-log-in
-              | 
-              | Login
-
-      if (loggedIn)
-        li.profile_button
-          p.navbar-text.nav-item
-            a(href='/profile') Profile
-
+    if (loggedIn)
+      a.nav-link(href='/profile') Profile
       
+p.lead 
 
         //- li.nav-item.dropdown
         //- a#navbarDropdown.nav-link.dropdown-toggle(href='#' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false')

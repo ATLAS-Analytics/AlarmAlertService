@@ -40,11 +40,16 @@ hr {
   font-size: 24px;
   /* border: 2px solid #0b012e; */
   /* outline: none; */
-  /* color: #ffffff; */
+  color: white;
   /* padding: 14px 16px; */
   /* background-color: #044687; */
   /* font-family: inherit; */
   /* margin: 0; */
+}
+
+.navbar {
+  padding-top: 0px;
+  padding-bottom: 0px;
 }
 
 .nav-item {

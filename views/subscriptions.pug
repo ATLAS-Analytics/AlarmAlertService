@@ -6,15 +6,13 @@ block content
             .col-lg-5.mx-auto
                 h2 Alarms
                 div(id="SimpleJSTree")
-                br
-                button#jstree_button.btn.btn-primary Update Selected Alarms
 
             .col-lg-7.mx-auto
-                h2 Details
-                div(id="description")
-                    h5 Hover over an Event to Have its Description Appear Here
-                br
-                br
+                //- h2 Details
+                //- div(id="description")
+                //-     p Hover over an Event to Have its Description Appear Here
+                //- br
+                //- br
                 h2 Current Subscriptions
                 table#subscriptions_table.display(style='width:100%')
                 br
@@ -26,9 +24,10 @@ block content
          
 block extra_scripts
     script.
-
+        $('[data-toggle="tooltip"]').tooltip();
         var catdata = !{JSON.stringify(categories)};
         var subdata = !{JSON.stringify(subscriptions)};
+        console.log("subdata:", subdata);
 
         ( function () {
             var table = $('#subscriptions_table').DataTable({
@@ -58,35 +57,39 @@ block extra_scripts
             });
         }());
 
-        for (i=0; i<subdata.length; i++) {
-            for (j=0; j<catdata.length; j++) {
-                if (subdata[i] === catdata[j]) {
-                    var deletedsubs = document.getElementById('deletedsubs')
-                    deletedsubs.innerHTML = ''
-                    deletedsubs.innerHTML = 'Your current subscription was either renamed or deleted. Upon updating your selected alarms, this alarm will no longer be a part of your current subscriptions.'
-                }
-            }
-        }
-        console.log("subdata:", subdata)
+        //- for (i=0; i<subdata.length; i++) {
+        //-     for (j=0; j<catdata.length; j++) {
+        //-         if (subdata[i] === catdata[j]) {
+        //-             var deletedsubs = document.getElementById('deletedsubs')
+        //-             deletedsubs.innerHTML = ''
+        //-             deletedsubs.innerHTML = 'Your current subscription was either renamed or deleted. Upon updating your selected alarms, this alarm will no longer be a part of your current subscriptions.'
+        //-         }
+        //-     }
+        //- }
 
         treedata = []
         for (i=0; i<catdata.length; i++) {
-            treedata.push({"id":catdata[i].category,"parent":"#","text":catdata[i].category});
-            treedata.push({"id":catdata[i].category+" "+catdata[i].subcategory,"parent":catdata[i].category,"text":catdata[i].subcategory});
-            treedata.push({"id":catdata[i].category+" "+catdata[i].subcategory+" "+catdata[i].event,"parent":catdata[i].category+" "+catdata[i].subcategory,"text":catdata[i].event,"data":catdata[i].description});
+            treedata.push({
+                "id":catdata[i].category.replaceAll(' ', '_'),
+                "parent":"#",
+                "text":catdata[i].category
+                });
+            treedata.push({
+                "id": (catdata[i].category+"VV"+catdata[i].subcategory).replaceAll(' ', '_'),
+                "parent":catdata[i].category.replaceAll(' ', '_'),
+                "text":catdata[i].subcategory
+                });
+            treedata.push({
+                "id":(catdata[i].category+"VV"+catdata[i].subcategory+"VV"+catdata[i].event).replaceAll(' ', '_'),
+                "parent": (catdata[i].category+"VV"+catdata[i].subcategory).replaceAll(' ', '_'),
+                "text":catdata[i].event,
+                "data":catdata[i].description
+                });
         };
 
-        function multiDimensionalUnique(arr) {
-            var uniques = [];
-            var itemsFound = {};
-            for(var i = 0, l = arr.length; i < l; i++) {
-                var stringified = JSON.stringify(arr[i]);
-                if(itemsFound[stringified]) { continue; }
-                uniques.push(arr[i]);
-                itemsFound[stringified] = true;
-            }
-            return uniques;
-        }
+
+        
+        //- sets what's selected and what not
 
         for (i=0; i<treedata.length; i+=3) {
             cat = treedata[i].text;
@@ -106,6 +109,18 @@ block extra_scripts
                 }
             }
         }
+
+        function multiDimensionalUnique(arr) {
+            var uniques = [];
+            var itemsFound = {};
+            for(var i = 0, l = arr.length; i < l; i++) {
+                var stringified = JSON.stringify(arr[i]);
+                if(itemsFound[stringified]) { continue; }
+                uniques.push(arr[i]);
+                itemsFound[stringified] = true;
+            }
+            return uniques;
+        }
         treedata = multiDimensionalUnique(treedata)
  
         //console.log('rendered subscriptions data',subdata);
@@ -115,64 +130,63 @@ block extra_scripts
         $('#SimpleJSTree').jstree({
             core: {
                 themes: {
-                    variant: "large"
+                    variant: "large",
+                    icons: false
                 },
                 data: treedata
             },    
             plugins: ["checkbox"]
         });
         $('#SimpleJSTree').on("changed.jstree", function (e, data) {
-            console.log(data);
+            var cn=data.node;
+            //- console.log('changed:',cn);
+            if (cn===undefined){return;}
+            var selected=cn.state.selected;
+            var newData=[];
+            if (cn.id.split('VV').length === 3){ //- check if this is leaf
+                var vs=cn.id.replaceAll('_', ' ').split('VV');
+                newData.push({'category':vs[0],'subcategory':vs[1], 'event':vs[2], 'tags':'*'});
+            } else {
+                 cn.children_d.forEach(c=>{
+                    if (c.split('VV').length===3){
+                        var vs=c.replaceAll('_', ' ').split('VV');
+                        newData.push({'category':vs[0],'subcategory':vs[1], 'event':vs[2], 'tags':'*'});
+                    }
+                })
+            }
+            var st=$('#subscriptions_table').DataTable();
+            oldData=st.data().toArray();
+            console.log('newdata', newData);
+            console.log('olddata', oldData);
+            
+            var nd=[];
+            if (selected === true){
+                nd=oldData.concat(newData);
+            }else{
+                oldData.forEach(or=>{
+                    var found=false;
+                    newData.forEach(nr=>{
+                        if (nr['category'] === or['category'] && nr['subcategory'] === or['subcategory'] && nr['event']===or['event']){
+                            found=true;
+                        }
+                    })
+                    if (found === false){
+                        nd.push(or);
+                    }
+                })
+            }
+            st.clear().rows.add(nd).draw();
         });
+
         $('#SimpleJSTree').bind("hover_node.jstree", function(e, data) {
-            //console.log(data.node.data);
+            //- console.log('data', data);
             if (data.node.children.length === 0) {
-                var desc = document.getElementById('description')
-                desc.innerHTML = "";
-                desc.innerHTML = data.node.data;
+                //- $('#description').innerHTML=data.node.data;
+                $('#' + data.node.id).attr('title', data.node.data);
             };
         });       
 
         console.log("Categories:", catdata);
-
-        $('#jstree_button').click((event) => {
-            subdata = []
-            event.preventDefault();
-            var checked_ids = [];
-            checked_ids = $('#SimpleJSTree').jstree("get_selected",true)
-
-            for (i=0; i<checked_ids.length; i++) {
-                if (checked_ids[i].children.length ==0) {
-                    for (j=0; j<catdata.length; j++) {
-                        if (checked_ids[i].text == catdata[j].event) {
-                            if (checked_ids[i].parents[1] == catdata[j].category) {
-                                subdata.push(catdata[j])
-                            }
-                        }
-                    }
-                }
-            };
-            
-            console.log(subdata)
-        
-            var toSend = JSON.stringify(subdata)
-            if (subdata.length == 0) {
-                var toSend = JSON.stringify([{'category': null ,'subcategory': null ,'event': null}])
-            }
-            console.log('toSend',toSend);
-            let jqxhr = $.ajax({
-                type: 'post',
-                url: '/user/subscriptions/#{userId}',
-                contentType: 'application/json',
-                data: toSend,
-                success() {
-                    console.log('success');
-                },
-                error(xhr, textStatus, errorThrown) {
-                    alert(`Error Code::${xhr.status}.${xhr.responseText}`);
-                }
-            })
-            setTimeout(location.reload.bind(location), 300);
 
         });
 
