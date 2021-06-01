@@ -29,19 +29,19 @@
     "body-parser": "^1.19.0",
     "cookies": "^0.8.0",
     "express": "^4.17.1",
-    "express-session": "^1.17.1",
+    "express-session": "^1.17.2",
     "https": "^1.0.0",
     "lodash": ">=4.17.21",
     "mailgun-js": "^0.22.0",
-    "npm": "^7.13.0",
+    "npm": "^7.15.1",
     "pug": "^3.0.2",
     "request": "^2.88.2",
     "requests": "^0.3.0",
     "requires": "^1.0.2"
   },
   "devDependencies": {
-    "eslint": "^7.26.0",
+    "eslint": "^7.27.0",
     "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-plugin-import": "^2.23.2"
+    "eslint-plugin-import": "^2.23.4"
   }
 }
