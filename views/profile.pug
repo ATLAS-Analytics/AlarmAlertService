@@ -66,18 +66,18 @@ block extra_scripts
                 const toSend=JSON.stringify(data);
                 console.log('toSend',toSend);
                 let jqxhr = $.ajax({
-                type: 'post',
-                url: '/user/preferences/#{userId}',
-                contentType: 'application/json',
-                data: toSend,
-                success() {
-                    console.log('success');
-                    //window.location.href = '/profile';
-                },
-                error(xhr, textStatus, errorThrown) {
-                    alert(`Error code:${xhr.status}.${xhr.responseText}`);
-                    //window.location.href = '/profile';
-                }
+                    type: 'post',
+                    url: '/user/preferences/#{userId}',
+                    contentType: 'application/json',
+                    data: toSend,
+                    success() {
+                        console.log('success');
+                        //window.location.href = '/profile';
+                    },
+                    error(xhr, textStatus, errorThrown) {
+                        alert(`Error code:${xhr.status}.${xhr.responseText}`);
+                        //window.location.href = '/profile';
+                    }
                 });
                 setTimeout(location.reload.bind(location), 150);
 
