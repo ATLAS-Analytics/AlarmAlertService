@@ -16,7 +16,7 @@ block content
                             
             .col-lg-6.mx-auto
                 h1 Preferences
-                ul.list-group.list-group-flush    
+                ul(id='prefdiv').list-group.list-group-flush 
                     li.list-group-item Vacation &nbsp; 
                         input( id='vacation' type='checkbox' width='20px' checked=preferences.vacation )
                     li.list-group-item Time Interval to Receive Alerts &nbsp;
@@ -54,7 +54,36 @@ block extra_scripts
         //-     });
         //- }());
         
+        var preferences = !{JSON.stringify(preferences)};
+        var ddval = preferences.mail_interval/3600
+        $(document).ready(function(){
+            $('select[id=interval] option[value=' + ddval + ']').attr('selected', 'selected');
+        });
+
+        //- var intconf = !{JSON.stringify(config)};
+        //- const config = Object.entries(intconf)
+        //- console.log(config);
+        //- var prefdiv = document.getElementById('prefdiv')
+        //- for (i=0; i<config.length; i++) {
+        //-     var html = ""
+        //-     var newDiv = document.createElement('li')
+        //-     newDiv.id = 'head_' + config[i][0];
+        //-     newDiv.className = 'list-group-item'
+        //-     if (config[i][1][0] == 'boolean') {
+        //-         html += config[i][0] + 'checkbox'
+        //-     }
+        //-     if (config[i][1][0] == 'number') {
+        //-         html += config[i][0] + 'dropdown'
+        //-     }
+        //-     newDiv.innerHTML = html 
+        //-     prefdiv.appendChild(newDiv)
+        //-     console.log(config[i][1])
+        //- }
+        //- document.appendChild(prefdiv)
+        
+        
         ( function () {
+            
             $('#update_preferences_button').click((event) => {
                 event.preventDefault();
                 console.log('Update preferences called');
@@ -80,6 +109,7 @@ block extra_scripts
                     }
                 });
                 setTimeout(location.reload.bind(location), 150);
+                alert("Preferences Updated");
 
             });
         }());
