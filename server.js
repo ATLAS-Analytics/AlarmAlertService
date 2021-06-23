@@ -159,7 +159,7 @@ app.get('/subscriptions', requiresLogin, async (req, res) => {
   res.render('subscriptions', userInfo);
 });
 
-app.get('/viewer', async (req,res)=>{
+app.get('/viewer', requiresLogin, async (req,res)=>{
   const data = {};
   data.categories = await alarms.loadCategories();
   if (req?.session?.user?.id !== undefined){
