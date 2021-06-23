@@ -4,8 +4,8 @@ nav#mainNav.navbar.navbar-dark.bg-dark.sticky-top
   nav.nav
     a.nav-link(href='./') Home
     a.nav-link(href='/docs') Docs
-    a.nav-link(href='/viewer') Alarms
     if (loggedIn)
+      a.nav-link(href='/viewer') Alarms
       a.nav-link(href='/subscriptions') Subscriptions
 
   nav.nav.navbar-right

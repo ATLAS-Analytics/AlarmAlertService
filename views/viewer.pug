@@ -158,7 +158,6 @@ block extra_scripts
                     url: '/alarm/fetch',
                     contentType: 'application/json',
                     data: function ( d ) {
-                        console.log('getting data for the table.');
                         return JSON.stringify({
                             category: qCategory, 
                             subcategory: qSubcategory, 
@@ -216,6 +215,7 @@ block extra_scripts
         }
         else {
             updateForm(qCategory,qSubcategory,qEvent);
+            $('#cascade').hide();
             createTable();
         }
 
