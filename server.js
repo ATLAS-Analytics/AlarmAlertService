@@ -185,6 +185,7 @@ app.get('/profile', requiresLogin, async (req, res) => {
   // TODO logic if returned info is false
   userInfo.loggedIn = true;
   userInfo.userId = req.session.user.id;
+  userInfo.config = config.PREFERENCES
   res.render('profile', userInfo);
 });
 
