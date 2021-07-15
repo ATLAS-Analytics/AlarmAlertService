@@ -16,43 +16,18 @@ block content
                             
             .col-lg-6.mx-auto
                 h1 Preferences
-                ul.list-group.list-group-flush    
-                    li.list-group-item Vacation &nbsp; 
-                        input( id='vacation' type='checkbox' width='20px' checked=preferences.vacation )
-                    li.list-group-item Time Interval to Receive Alerts &nbsp;
-                        select(id='interval' width='4px')
-                            option(value='1') 1 Hour Intervals
-                            option(value='2') 2 Hour Intervals
-                            option(value='4') 4 Hour Intervals
-                            option(value='8') 8 Hour Intervals
-                            option(value='12') 12 Hour Intervals
-                            option(value='24') 24 Hour Intervals
-                            
+                ul#pref_ul.list-group.list-group-flush    
+                    each val, key in config
+                        li.list-group-item #{val.name} &nbsp;
+                            if val.type==='boolean'
+                                input.prefs( id=key type='checkbox' width='20px' checked=preferences[key] )
+                            if val.type==='number'
+                                input.prefs( id=key type='number' width='20px' value=preferences[key] )
+
                 button#update_preferences_button.btn.btn-primary Update Preferences
 
 block extra_scripts
     script.
-        //- this function works. button not really needed.
-        //- ( function () {
-        //-     $(":checkbox").change(function(){
-        //-         const key=$(this).attr('id');
-        //-         const chc=$(this).is(':checked');
-        //-         data={};
-        //-         data[key]=chc;
-        //-         console.log('data',data);
-        //-         const toSend=JSON.stringify(data);
-        //-         console.log('toSend',toSend);
-        //-         alert('data to send:' + toSend);
-        //-         $.ajax({
-        //-             type: "POST",
-        //-             url: "/user/#{userId}",
-        //-             data: toSend,
-        //-             success: function() { alert( "ALL OK" ); },
-        //-             contentType: "application/json; charset=utf-8",
-        //-             dataType: "json"
-        //-         });
-        //-     });
-        //- }());
         
         ( function () {
             $('#update_preferences_button').click((event) => {
@@ -60,9 +35,17 @@ block extra_scripts
                 console.log('Update preferences called');
 
                 const data = {};
-                data.vacation = $('#vacation').is(':checked');
-                var dropdown = document.getElementById('interval');
-                data.mail_interval = dropdown.value*3600;
+                var prefs = document.getElementsByClassName("prefs");
+                for (var i = 0; i < prefs.length; i++) {
+                    if (prefs[i].type === 'checkbox' ){
+                        data[prefs[i].id]=prefs[i].checked;
+                    }
+                    if (prefs[i].type === 'number' ){
+                        data[prefs[i].id]=Number(prefs[i].value);
+                    }
+                }
+                console.log('new prefs:', data);
+
                 const toSend=JSON.stringify(data);
                 console.log('toSend',toSend);
                 let jqxhr = $.ajax({

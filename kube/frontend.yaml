@@ -81,5 +81,5 @@ spec:
                   name: globus-secret
               - secret:
                   name: config
-              - secret:
-                  name: mg-config
+              # - secret:
+              #     name: mg-config
