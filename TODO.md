@@ -1,4 +1,6 @@
-* add Jira ticket creation option
+# TO DO list
+
+* add Jira/GGUS ticket creation option (button in alarm viewer)
 * add alarm link to emails
 * add time selector to viewer and/or link to kibana.
 * add storing annotations of alarms

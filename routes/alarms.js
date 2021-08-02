@@ -220,6 +220,83 @@ router.post('/category', jsonParser, async (req, res) => {
   }
 });
 
+router.patch('/category', jsonParser, async (req, res) => {
+  const b = req.body;
+  console.log('Patching category with body:\n', b);
+  if (b === undefined || b === null || Object.keys(b).length < 4) {
+    res.status(400).send('nothing PATCHEDed or data incomplete.\n');
+    return;
+  }
+  if (b.category === undefined || b.category === null) {
+    res.status(400).send('category is required.\n');
+    return;
+  }
+  if (b.subcategory === undefined || b.subcategory === null) {
+    res.status(400).send('subcategory is required.\n');
+    return;
+  }
+  if (b.event === undefined || b.event === null) {
+    res.status(400).send('event is required.\n');
+    return;
+  }
+
+  // console.log('Check that only allowed things are in.');
+  // add allowed things to edit source.
+  let disallowed = '';
+  let source = '';
+  Object.entries(b).forEach(([key, value]) => {
+    // console.log(`${key}: ${value}`);
+    if (config.ALLOWED_CATEGORY_FIELDS.indexOf(key) < 0) {
+      console.log(`${key} not allowed.\n`);
+      disallowed += `${key} not allowed.\n`;
+    } else {
+      source += `ctx._source["${key}"] = "${value}";`;
+    }
+  });
+  if (disallowed.length > 0) {
+    res.status(400).send(disallowed);
+    return;
+  }
+
+  await loadCategories();
+
+  // console.log('Check that the category was registered');
+  if (cats.includes(`${b.category}_${b.subcategory}_${b.event}`)) {
+    console.debug('category registered, lets update');
+    const updateBody = {
+      script: {
+        lang: 'painless',
+        source,
+      },
+      query: {
+        bool: {
+          must: [
+            { term: { category: b.category } },
+            { term: { subcategory: b.subcategory } },
+            { term: { event: b.event } },
+          ],
+        },
+      },
+    };
+
+    try {
+      const response = await es.updateByQuery({
+        index: esCategoriesIndex, body: updateBody, refresh: true,
+      });
+      console.log('Category pathced.');
+      console.debug(response.body);
+      await loadCategories();
+      res.status(200).send('OK');
+      return;
+    } catch (err) {
+      console.error(err);
+      res.status(500).send(err.body);
+    }
+  } else {
+    res.status(400).send('no such category, subcategory or event allowed.');
+  }
+});
+
 router.delete('/:category', async (req, res) => {
   const { category } = req.params;
   console.log('Deleting alarms in category:', category);

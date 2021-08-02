@@ -82,8 +82,9 @@ block content
                     | The template field defines text that will appear in the alert email. 
                     | So it should be brief, but give all the information that a person receiving it could judge how serious issue is, shoudl he/she forward it, and have enough information to either act on it, or start digging further into the issue.
                     | All the instances of %{#[strong variable]} will be changed with values of #[em variable] field given in alarms "source" field. At this moment only simple #[em \n] and #[em \t] are available for formating. 
-                    | Once you have the json alarm description ready, you can simply post it to the Alarm And Alert Service rest
-                    a(href="#api_alarm_register") #[strong endpoint]
+                    | Once you have the json alarm description ready, you can simply post it to the Alarm And Alert Service 
+                    |
+                    a(href="#api_alarm_register") REST endpoint
                     | .
 
                 h3#creation Creating Alarm
@@ -119,7 +120,7 @@ block content
 
                 h2#rest REST API
                 p.font-weight-normal
-                    | There are two main parts of API. One concerning users, and once concerning alarms. 
+                    | There are two main parts of API. One concerning users, and one concerning alarms. 
                     | While not in its final form, it is already usable. 
                 
                 h3#api_alarm Alarm
@@ -145,7 +146,23 @@ block content
                                     "subcategory": "",
                                     "event": "",
                                     "description": "",
-                                    "template":""
+                                    "template": ""
+                                }
+
+                h4#api_alarm_register Editing Alarm
+                div(style="margin:20px;")
+                    p.font-weight-normal
+                        | #[strong PATCH] #[em /alarm/category]
+                    p.font-weight-normal
+                        | BODY raw(JSON)
+                        pre
+                            code. 
+                                {
+                                    "category": "",
+                                    "subcategory": "",
+                                    "event": "",
+                                    "description": "",
+                                    "template": ""
                                 }
 
                 h4#api_alarm_create Creating Alarm
