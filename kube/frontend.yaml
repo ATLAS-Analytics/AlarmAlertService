@@ -15,7 +15,7 @@ spec:
   selector:
     k8s-app: aaasf
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: aaasf
@@ -35,9 +35,12 @@ spec:
       http:
         paths:
           - path: /
+            pathType: Prefix
             backend:
-              serviceName: aaasf
-              servicePort: 80
+              service:
+                name: aaasf
+                port:
+                  number: 80
 ---
 apiVersion: apps/v1
 kind: Deployment
