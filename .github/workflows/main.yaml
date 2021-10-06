@@ -3,7 +3,7 @@ name: Build ATLAS Alarm and Alert Frontend image
 on:
   push:
     branches:
-      - "master"
+      - "main"
 
 jobs:
   docker:
