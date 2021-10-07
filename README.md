@@ -1,7 +1,7 @@
 [![Build ATLAS Alarm and Alert Frontend image](https://github.com/ATLAS-Analytics/AlarmAlertServiceFrontend/actions/workflows/main.yaml/badge.svg)](https://github.com/ATLAS-Analytics/AlarmAlertServiceFrontend/actions/workflows/main.yaml)
 
 # Alarm and Alert Service Frontend
-REST interface and frontend 
+REST interface and frontend
 
 Alarm types are stored as a single document in index *aaas_topology*
 * topology - flattened
