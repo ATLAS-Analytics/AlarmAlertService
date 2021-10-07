@@ -1,5 +1,6 @@
 # TO DO list
 
+* flux deployment
 * add Jira/GGUS ticket creation option (button in alarm viewer)
 * add alarm link to emails
 * add time selector to viewer and/or link to kibana.
