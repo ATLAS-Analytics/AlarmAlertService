@@ -4,6 +4,7 @@
 REST interface and frontend
 
 Alarm types are stored as a single document in index *aaas_topology*
+
 * topology - flattened
     {category:{
         subcategory:{
