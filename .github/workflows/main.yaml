@@ -26,5 +26,5 @@ jobs:
         with:
           token: ${{ secrets.AAAS_GITOPS_DEPLOY_TRIGGER }}
           repository: ATLAS-Analytics/deployments
-          event-type: gitops-aaaf-app-trigger
+          event-type: gitops-aaasf-app-trigger
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
