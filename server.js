@@ -1,4 +1,4 @@
-/* eslint-disable no-multi-assign */
+const fs = require('fs');
 const express = require('express');
 const session = require('express-session');
 const mrequest = require('request');
@@ -11,11 +11,11 @@ let config;
 let globConf;
 
 if (!TEST) {
-  config = require('/etc/aaasf/config.json');
-  globConf = require('/etc/aaasf/globus-config.json');
+  config = JSON.parse(fs.readFileSync('/etc/aaasf/config.json', 'utf8'));
+  globConf = JSON.parse(fs.readFileSync('/etc/aaasf/globus-config.json', 'utf8'));
 } else {
-  config = require('./kube/secrets/config.json');
-  globConf = require('./kube/secrets/globus-config.json');
+  config = JSON.parse(fs.readFileSync('./kube/secrets/config.json', 'utf8'));
+  globConf = JSON.parse(fs.readFileSync('./kube/secrets/globus-config.json', 'utf8'));
 }
 
 console.log(config);
@@ -159,21 +159,20 @@ app.get('/subscriptions', requiresLogin, async (req, res) => {
   res.render('subscriptions', userInfo);
 });
 
-app.get('/viewer', requiresLogin, async (req,res)=>{
+app.get('/viewer', requiresLogin, async (req, res) => {
   const data = {};
   data.categories = await alarms.loadCategories();
-  if (req?.session?.user?.id !== undefined){
+  if (req.session.user.id !== undefined) {
     data.loggedIn = true;
   }
   res.render('viewer', data);
 });
 
 app.get('/docs', async (req, res) => {
-  if (req?.session?.user?.id === undefined){
+  if (req.session.user.id === undefined) {
     res.render('docs');
-  }
-  else{
-    const userInfo = {loggedIn:true}
+  } else {
+    const userInfo = { loggedIn: true };
     res.render('docs', userInfo);
   }
 });
