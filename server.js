@@ -117,19 +117,18 @@ app.get('/authcallback', (req, res) => {
   }
 
   const red = `${globConf.TOKEN_URI}?grant_type=authorization_code&redirect_uri=${globConf.redirect_link}&code=${code}`;
-
-  const requestOptions = {
-    uri: red, method: 'POST', headers: { Authorization: auth }, json: true,
-  };
-
+  // const requestOptions = {
+  //   uri: red, method: 'POST', headers: { Authorization: auth }, json: true,
+  // };
   // console.log(requestOptions);
 
-  axios.post(globConf.TOKEN_URI, {
-    params: {
-      grant_type: 'authorization_code',
-      redirect_uri: globConf.redirect_link,
-      code,
-    },
+  axios.post(red, {
+  // axios.post(globConf.TOKEN_URI, {
+    // params: {
+    //   grant_type: 'authorization_code',
+    //   redirect_uri: globConf.redirect_link,
+    //   code,
+    // },
     headers: {
       Authorization: auth,
     },
