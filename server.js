@@ -140,9 +140,9 @@ app.get('/authcallback', (req, res) => {
       //     res.redirect('/');
       //   }
       
-      console.log(`statusCode: ${res1.status}`);
+      console.log(`statusCode1: ${res1.status}`);
       const body1 = res1.body;
-      console.log('success:', body1);
+      console.log('success1:', body1);
 
       console.log('==========================\n getting name.');
       // const idRed = 'https://auth.globus.org/v2/oauth2/userinfo';
@@ -159,7 +159,7 @@ app.get('/authcallback', (req, res) => {
         },
       })
         .then((res2) => {
-          console.log(`statusCode: ${res2.status}`);
+          console.log(`statusCode2: ${res2.status}`);
           const body2 = res2.body;
           console.log('body2:\t', body2);
           const u = {
@@ -174,7 +174,7 @@ app.get('/authcallback', (req, res) => {
           req.session.loggedIn = true;
         })
         .catch((error2) => {
-          console.log('error on geting username:\t', error2);
+          console.log('error2 on geting username:\t', error2);
         })
         .then(() => {
           res.render('index', req.session);
