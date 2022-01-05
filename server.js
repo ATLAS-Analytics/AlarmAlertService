@@ -70,14 +70,14 @@ app.get('/logout', (req, res) => { // , next
   if (req.session.loggedIn) {
     // logout from Globus
     // const requestOptions = {
-    //   uri: `https://auth.globus.org/v2/web/logout?client_id=${globConf.CLIENT_ID}`,
+    //   uri: `${globConf.LOGOUT_URI}?client_id=${globConf.CLIENT_ID}`,
     //   headers: {
     //     Authorization: `Bearer ${req.session.token}`,
     //   },
     //   json: true,
     // };
 
-    axios.get('https://auth.globus.org/v2/web/logout', {
+    axios.get(globConf.LOGOUT_URI, {
       params: {
         client_id: globConf.CLIENT_ID,
       },
@@ -116,30 +116,35 @@ app.get('/authcallback', (req, res) => {
     console.log('NO CODE call...');
   }
 
-  const red = `${globConf.TOKEN_URI}?grant_type=authorization_code&redirect_uri=${globConf.redirect_link}&code=${code}`;
+  // const red = `${globConf.TOKEN_URI}?grant_type=authorization_code&redirect_uri=${globConf.redirect_link}&code=${code}`;
   // const requestOptions = {
   //   uri: red, method: 'POST', headers: { Authorization: auth }, json: true,
   // };
   // console.log(requestOptions);
-
-  axios.post(red, {
-  // axios.post(globConf.TOKEN_URI, {
-    // params: {
-    //   grant_type: 'authorization_code',
-    //   redirect_uri: globConf.redirect_link,
-    //   code,
-    // },
-    headers: {
-      Authorization: auth,
+  const params = new URLSearchParams({
+    grant_type: 'authorization_code',
+    code,
+    redirect_uri: globConf.redirect_link,
+    client_id: globConf.CLIENT_ID,
+    client_secret: globConf.CLIENT_SECRET,
+  });
+  axios.post(
+    globConf.TOKEN_URI,
+    params.toString(),
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: auth,
+      },
     },
-  })
+  )
     .then((res1) => {
       // mrequest.post(requestOptions, (error, _response, body) => {
       //   if (error) {
       //     console.log('failure...', error);
       //     res.redirect('/');
       //   }
-      
+
       console.log(`statusCode1: ${res1.status}`);
       const body1 = res1.body;
       console.log('success1:', body1);
@@ -199,7 +204,7 @@ app.get('/authcallback', (req, res) => {
     // });
     })
     .catch((error1) => {
-      console.log('failure...', error1);
+      console.log('error1:', error1);
       res.redirect('/');
     });
 });
