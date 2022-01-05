@@ -1,7 +1,7 @@
 const fs = require('fs');
 const express = require('express');
 const session = require('express-session');
-const mrequest = require('request');
+const axios = require('axios').default;
 
 console.log('Alarm & Alert Service server starting ... ');
 
@@ -69,20 +69,35 @@ app.get('/login', async (req, res) => {
 app.get('/logout', (req, res) => { // , next
   if (req.session.loggedIn) {
     // logout from Globus
-    const requestOptions = {
-      uri: `https://auth.globus.org/v2/web/logout?client_id=${globConf.CLIENT_ID}`,
+    // const requestOptions = {
+    //   uri: `https://auth.globus.org/v2/web/logout?client_id=${globConf.CLIENT_ID}`,
+    //   headers: {
+    //     Authorization: `Bearer ${req.session.token}`,
+    //   },
+    //   json: true,
+    // };
+
+    axios.get('https://auth.globus.org/v2/web/logout', {
+      params: {
+        client_id: globConf.CLIENT_ID,
+      },
       headers: {
         Authorization: `Bearer ${req.session.token}`,
       },
-      json: true,
-    };
-
-    mrequest.get(requestOptions, (error) => { // , response, body
-      if (error) {
+    })
+      .then((response) => {
+        console.log('logout:', response, 'globus logout success.\n');
+      })
+      .catch((error) => {
         console.log('logout failure...', error);
-      }
-      console.log('globus logout success.\n');
-    });
+      });
+
+    // mrequest.get(requestOptions, (error) => { // , response, body
+    //   if (error) {
+    //     console.log('logout failure...', error);
+    //   }
+    //   console.log('globus logout success.\n');
+    // });
   }
   req.session.destroy();
 
@@ -109,42 +124,85 @@ app.get('/authcallback', (req, res) => {
 
   // console.log(requestOptions);
 
-  mrequest.post(requestOptions, (error, _response, body) => {
-    if (error) {
-      console.log('failure...', error);
+  axios.post(globConf.TOKEN_URI, {
+    params: {
+      grant_type: 'authorization_code',
+      redirect_uri: globConf.redirect_link,
+      code,
+    },
+    headers: {
+      Authorization: auth,
+    },
+  })
+    .then((res1) => {
+      // mrequest.post(requestOptions, (error, _response, body) => {
+      //   if (error) {
+      //     console.log('failure...', error);
+      //     res.redirect('/');
+      //   }
+      
+      console.log(`statusCode: ${res1.status}`);
+      const body1 = res1.body;
+      console.log('success:', body1);
+
+      console.log('==========================\n getting name.');
+      // const idRed = 'https://auth.globus.org/v2/oauth2/userinfo';
+      // const idrequestOptions = {
+      //   uri: idRed,
+      //   method: 'POST',
+      //   json: true,
+      //   headers: { Authorization: `Bearer ${body.access_token}` },
+      // };
+
+      axios.post('https://auth.globus.org/v2/oauth2/userinfo', {
+        headers: {
+          Authorization: `Bearer ${body1.access_token}`,
+        },
+      })
+        .then((res2) => {
+          console.log(`statusCode: ${res2.status}`);
+          const body2 = res2.body;
+          console.log('body2:\t', body2);
+          const u = {
+            id: body2.sub,
+            name: body2.name,
+            email: body2.email,
+            username: body2.preferred_username,
+            affiliation: body2.organization,
+          };
+          usr.addIfNeeded(u);
+          req.session.user = u;
+          req.session.loggedIn = true;
+        })
+        .catch((error2) => {
+          console.log('error on geting username:\t', error2);
+        })
+        .then(() => {
+          res.render('index', req.session);
+        });
+
+    // mrequest.post(idrequestOptions, async (error1, response1, body1) => {
+    //   if (error1) {
+    //     console.log('error on geting username:\t', error1);
+    //   } else {
+    //     console.log('body:\t', body1);
+    //     const u = {
+    //       id: body1.sub,
+    //       name: body1.name,
+    //       email: body1.email,
+    //       username: body1.preferred_username,
+    //       affiliation: body1.organization,
+    //     };
+    //     usr.addIfNeeded(u);
+    //     req.session.user = u;
+    //   }
+    //   res.render('index', req.session);
+    // });
+    })
+    .catch((error1) => {
+      console.log('failure...', error1);
       res.redirect('/');
-    }
-    console.log('success');// , body);
-
-    req.session.loggedIn = true;
-
-    console.log('==========================\n getting name.');
-    const idRed = 'https://auth.globus.org/v2/oauth2/userinfo';
-    const idrequestOptions = {
-      uri: idRed,
-      method: 'POST',
-      json: true,
-      headers: { Authorization: `Bearer ${body.access_token}` },
-    };
-
-    mrequest.post(idrequestOptions, async (error1, response1, body1) => {
-      if (error1) {
-        console.log('error on geting username:\t', error1);
-      } else {
-        console.log('body:\t', body1);
-        const u = {
-          id: body1.sub,
-          name: body1.name,
-          email: body1.email,
-          username: body1.preferred_username,
-          affiliation: body1.organization,
-        };
-        usr.addIfNeeded(u);
-        req.session.user = u;
-      }
-      res.render('index', req.session);
     });
-  });
 });
 
 app.get('/subscriptions', requiresLogin, async (req, res) => {
@@ -162,14 +220,14 @@ app.get('/subscriptions', requiresLogin, async (req, res) => {
 app.get('/viewer', requiresLogin, async (req, res) => {
   const data = {};
   data.categories = await alarms.loadCategories();
-  if (req.session.user.id !== undefined) {
+  if (req.session.user !== undefined && req.session.user.id !== undefined) {
     data.loggedIn = true;
   }
   res.render('viewer', data);
 });
 
 app.get('/docs', async (req, res) => {
-  if (req.session.user.id === undefined) {
+  if (req.session.user === undefined || req.session.user.id === undefined) {
     res.render('docs');
   } else {
     const userInfo = { loggedIn: true };
