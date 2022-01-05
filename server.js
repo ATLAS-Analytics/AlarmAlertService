@@ -75,7 +75,7 @@ app.get('/login', async (req, res) => {
   // &redirect_uri=${globConf.REDIRECT_LINK}
   // &response_type=code
   // &client_id=${globConf.CLIENT_ID}`;
-  // console.log('redirecting to:', red);
+  console.log('redirecting to:', red);
   res.redirect(red);
 });
 
@@ -136,9 +136,10 @@ app.get('/authcallback', (req, res) => {
     client_id: globConf.CLIENT_ID,
     client_secret: globConf.CLIENT_SECRET,
   });
+  console.log('params:', params.toString());
   axios.post(
-    globConf.TOKEN_URI,
-    {params},
+    `${globConf.TOKEN_URI}?${params.toString()}`,
+    // {params},
     {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
