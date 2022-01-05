@@ -133,8 +133,8 @@ app.get('/authcallback', (req, res) => {
     grant_type: 'authorization_code',
     code,
     redirect_uri: globConf.REDIRECT_LINK,
-    client_id: globConf.CLIENT_ID,
-    client_secret: globConf.CLIENT_SECRET,
+    // client_id: globConf.CLIENT_ID,
+    // client_secret: globConf.CLIENT_SECRET,
   });
   console.log('params:', params.toString());
   axios.post(
