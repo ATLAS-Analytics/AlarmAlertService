@@ -61,7 +61,20 @@ const requiresLogin = async (req, res, next) => {
 
 app.get('/login', async (req, res) => {
   console.log('Logging in');
-  const red = `${globConf.AUTHORIZE_URI}?scope=urn%3Aglobus%3Aauth%3Ascope%3Aauth.globus.org%3Aview_identities+openid+email+profile&state=garbageString&redirect_uri=${globConf.redirect_link}&response_type=code&client_id=${globConf.CLIENT_ID}`;
+  const params = new URLSearchParams({
+    scope: 'urn:globus:auth:scope:auth.globus.org:view_identities+openid+email+profile',
+    state: 'garbageString',
+    response_type: 'code',
+    redirect_uri: globConf.REDIRECT_LINK,
+    client_id: globConf.CLIENT_ID,
+    client_secret: globConf.CLIENT_SECRET,
+  });
+  const red = `${globConf.AUTHORIZE_URI}?${params.toString()}`;
+  // ?scope=urn%3Aglobus%3Aauth%3Ascope%3Aauth.globus.org%3Aview_identities+openid+email+profile
+  // &state=garbageString
+  // &redirect_uri=${globConf.REDIRECT_LINK}
+  // &response_type=code
+  // &client_id=${globConf.CLIENT_ID}`;
   // console.log('redirecting to:', red);
   res.redirect(red);
 });
@@ -116,21 +129,16 @@ app.get('/authcallback', (req, res) => {
     console.log('NO CODE call...');
   }
 
-  // const red = `${globConf.TOKEN_URI}?grant_type=authorization_code&redirect_uri=${globConf.redirect_link}&code=${code}`;
-  // const requestOptions = {
-  //   uri: red, method: 'POST', headers: { Authorization: auth }, json: true,
-  // };
-  // console.log(requestOptions);
   const params = new URLSearchParams({
     grant_type: 'authorization_code',
     code,
-    redirect_uri: globConf.redirect_link,
+    redirect_uri: globConf.REDIRECT_LINK,
     client_id: globConf.CLIENT_ID,
     client_secret: globConf.CLIENT_SECRET,
   });
   axios.post(
     globConf.TOKEN_URI,
-    params.toString(),
+    {params},
     {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
