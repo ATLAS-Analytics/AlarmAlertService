@@ -62,7 +62,7 @@ const requiresLogin = async (req, res, next) => {
 app.get('/login', async (req, res) => {
   console.log('Logging in');
   const params = new URLSearchParams({
-    scope: 'urn:globus:auth:scope:auth.globus.org:view_identities+openid+email+profile',
+    scope: 'openid email profile',
     state: 'garbageString',
     response_type: 'code',
     redirect_uri: globConf.REDIRECT_LINK,
