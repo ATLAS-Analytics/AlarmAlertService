@@ -162,14 +162,13 @@ app.get('/authcallback', (req, res) => {
       )
         .then((res2) => {
           console.log(`statusCode2: ${res2.status}`);
-          const body2 = res2;
-          console.log('body2:\t', body2);
+          console.log('res2:\t', res2.data);
           const u = {
-            id: body2.sub,
-            name: body2.name,
-            email: body2.email,
-            username: body2.preferred_username,
-            affiliation: body2.organization,
+            id: res2.data.sub,
+            name: res2.data.name,
+            email: res2.data.email,
+            username: res2.data.preferred_username,
+            affiliation: res2.data.organization,
           };
           usr.addIfNeeded(u);
           req.session.user = u;
