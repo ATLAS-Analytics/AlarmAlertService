@@ -79,17 +79,8 @@ app.get('/login', async (req, res) => {
   res.redirect(red);
 });
 
-app.get('/logout', (req, res) => { // , next
+app.get('/logout', (req, res) => {
   if (req.session.loggedIn) {
-    // logout from Globus
-    // const requestOptions = {
-    //   uri: `${globConf.LOGOUT_URI}?client_id=${globConf.CLIENT_ID}`,
-    //   headers: {
-    //     Authorization: `Bearer ${req.session.token}`,
-    //   },
-    //   json: true,
-    // };
-
     axios.get(globConf.LOGOUT_URI, {
       params: {
         client_id: globConf.CLIENT_ID,
@@ -99,22 +90,16 @@ app.get('/logout', (req, res) => { // , next
       },
     })
       .then((response) => {
-        console.log('logout:', response, 'globus logout success.\n');
+        console.log(`logout status: ${response.status} globus logout success.`);
       })
       .catch((error) => {
         console.log('logout failure...', error);
+      })
+      .then(() => {
+        req.session.destroy();
+        res.redirect('/');
       });
-
-    // mrequest.get(requestOptions, (error) => { // , response, body
-    //   if (error) {
-    //     console.log('logout failure...', error);
-    //   }
-    //   console.log('globus logout success.\n');
-    // });
   }
-  req.session.destroy();
-
-  res.redirect('/');
 });
 
 app.get('/authcallback', (req, res) => {
@@ -136,9 +121,10 @@ app.get('/authcallback', (req, res) => {
   });
   console.log('params:', params.toString());
   axios.post(
-    `${globConf.TOKEN_URI}?${params.toString()}`,
-    null,
+    `${globConf.TOKEN_URI}`,//?${params.toString()}`,
+    // null,
     {
+      params,
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         Authorization: auth,
@@ -147,8 +133,7 @@ app.get('/authcallback', (req, res) => {
   )
     .then((res1) => {
       console.log(`statusCode1: ${res1.status}`);
-      console.log('success1:', res1);
-
+      console.log('success1:', res1.data);
       console.log('==========================\n getting name.');
 
       axios.post(
