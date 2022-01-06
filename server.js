@@ -121,10 +121,9 @@ app.get('/authcallback', (req, res) => {
   });
   console.log('params:', params.toString());
   axios.post(
-    `${globConf.TOKEN_URI}`,//?${params.toString()}`,
-    // null,
+    `${globConf.TOKEN_URI}?${params.toString()}`,
+    null,
     {
-      params,
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         Authorization: auth,
