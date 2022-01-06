@@ -133,8 +133,6 @@ app.get('/authcallback', (req, res) => {
     grant_type: 'authorization_code',
     code,
     redirect_uri: globConf.REDIRECT_LINK,
-    // client_id: globConf.CLIENT_ID,
-    // client_secret: globConf.CLIENT_SECRET,
   });
   console.log('params:', params.toString());
   axios.post(
@@ -148,14 +146,8 @@ app.get('/authcallback', (req, res) => {
     },
   )
     .then((res1) => {
-      // mrequest.post(requestOptions, (error, _response, body) => {
-      //   if (error) {
-      //     console.log('failure...', error);
-      //     res.redirect('/');
-      //   }
-
       console.log(`statusCode1: ${res1.status}`);
-      const body1 = res1.body;
+      const body1 = res1;
       console.log('success1:', body1);
 
       console.log('==========================\n getting name.');
