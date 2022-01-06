@@ -147,26 +147,22 @@ app.get('/authcallback', (req, res) => {
   )
     .then((res1) => {
       console.log(`statusCode1: ${res1.status}`);
-      const body1 = res1;
-      console.log('success1:', body1);
+      console.log('success1:', res1);
 
       console.log('==========================\n getting name.');
-      // const idRed = 'https://auth.globus.org/v2/oauth2/userinfo';
-      // const idrequestOptions = {
-      //   uri: idRed,
-      //   method: 'POST',
-      //   json: true,
-      //   headers: { Authorization: `Bearer ${body.access_token}` },
-      // };
 
-      axios.post('https://auth.globus.org/v2/oauth2/userinfo', {
-        headers: {
-          Authorization: `Bearer ${body1.access_token}`,
+      axios.post(
+        'https://auth.globus.org/v2/oauth2/userinfo',
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${res1.data.access_token}`,
+          },
         },
-      })
+      )
         .then((res2) => {
           console.log(`statusCode2: ${res2.status}`);
-          const body2 = res2.body;
+          const body2 = res2;
           console.log('body2:\t', body2);
           const u = {
             id: body2.sub,
