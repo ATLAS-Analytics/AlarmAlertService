@@ -4,6 +4,7 @@
   "description": "a frontend for ATLAS Alarm and Alert Services.",
   "main": "server.js",
   "scripts": {
+    "prestart": "npm install",
     "start": "node server.js"
   },
   "repository": {
