@@ -110,24 +110,26 @@ router.get('/:userId', async (req, res) => {
 router.delete('/:userId', (req, res) => {
   const { userId } = req.params;
   console.log('Deleting user with id:', userId);
-  es.deleteByQuery({
-    index: esUsersIndex,
-    refresh: true,
-    body: { query: { match: { _id: userId } } },
-  },
-  (err, response) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send('Error in deleting user.');
-      return;
-    }
-    if (response.body.deleted === 1) {
-      res.status(200).send('OK');
-      return;
-    }
-    console.log(response.body);
-    res.status(500).send('No user with that ID.');
-  });
+  es.deleteByQuery(
+    {
+      index: esUsersIndex,
+      refresh: true,
+      body: { query: { match: { _id: userId } } },
+    },
+    (err, response) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send('Error in deleting user.');
+        return;
+      }
+      if (response.body.deleted === 1) {
+        res.status(200).send('OK');
+        return;
+      }
+      console.log(response.body);
+      res.status(500).send('No user with that ID.');
+    },
+  );
 });
 
 router.post('/preferences/:userId', jsonParser, async (req, res) => {
