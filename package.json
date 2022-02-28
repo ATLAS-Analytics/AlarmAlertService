@@ -1,6 +1,6 @@
 {
   "name": "alarmalertservicefrontend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a frontend for ATLAS Alarm and Alert Services.",
   "main": "server.js",
   "scripts": {
@@ -34,7 +34,7 @@
     "https": "^1.0.0",
     "lodash": ">=4.17.21",
     "mailgun-js": "^0.22.0",
-    "npm": "^8.5.1",
+    "npm": "^8.5.2",
     "pug": "^3.0.2",
     "requests": "^0.3.0",
     "requires": "^1.0.2"
