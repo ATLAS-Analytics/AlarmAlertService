@@ -1,35 +1,24 @@
+# Alarm and Alert Service Frontend
+
 [![Build ATLAS Alarm and Alert Frontend image](https://github.com/ATLAS-Analytics/AlarmAlertServiceFrontend/actions/workflows/main.yaml/badge.svg)](https://github.com/ATLAS-Analytics/AlarmAlertServiceFrontend/actions/workflows/main.yaml)
 
-# Alarm and Alert Service Frontend
 REST interface and frontend
 
-Alarm types are stored as a single document in index *aaas_topology*
+## Elasticsearch
 
-* topology - flattened
-    {category:{
-        subcategory:{
+Documents are stored in following indices:
 
-        }
-    }}
-Alarms are stored in ES index: *aaas_alarms*
-* category
-* subcategory
-* event
-* created_at
-* tags
-* level
-* source
-* body
-* details
+| type | index |
+|---|---|
+| alarm type | *aaas_topology* |
+| alarms | *aaas_alarms*|
+| heartbeats type | *aaas_heartbeats_topology* |
+| heartbeats | *aaas_heartbeats* |
 
-### REST API - alarm - implemented
-* POST alarm/ (should enforce category and level, make sure there are event, source and body )
-* GET alarm/categories (returns dictionary tree of category, subcategory, event)
-* DEL alarm/:category
-* DEL alarm/:category/:subcategory
-* DEL alarm/:category/:subcategory/:event
+Content:
 
-*aaas_users*
+### *aaas_users*
+
 * affiliation
 * created_at
 * email
@@ -43,13 +32,116 @@ Alarms are stored in ES index: *aaas_alarms*
 * preferences - flattened
     .vacation ....
 
-### REST API - user
-* GET user/:userId - done
-* DEL user/:userId - done
-* POST user/preferences/:userId - only preferences {vaccation:T/F,...}  - done
-* POST user/subscriptions/:userId - accepts json {[{category, subcategory, event, tags}]}
+### *aaas_alerts*
 
-*aaas_alerts*
 * created_at
 * sent_to
 * reason
+
+## REST API
+
+### alarm
+
+* POST **alarm/** - it enforce category and subcategory, make sure there are event, source and body
+
+    ```json
+    {}
+    ```
+
+* POST **fetch/**
+* GET **alarm/categories** - returns dictionary tree of category, subcategory, event
+* POST **alarm/:category**
+
+    ```json
+    {}
+    ```
+
+* PATCH **alarm/:category**
+
+    ```json
+    {}
+    ```
+
+* DEL **alarm/:category**
+* DEL **alarm/:category/:subcategory**
+* DEL **alarm/:category/:subcategory/:event**
+
+### user
+
+* GET **user/** - returns json document with info on all users
+* GET **user/:userId** - returns json document with info on a specific user
+* DEL **user/:userId** - deletes specific user profile
+* POST **user/preferences/:userId** - sets user's preferences
+
+    ```json
+    {
+        "vaccation": "True",
+        ...
+    }```
+
+* POST **user/subscriptions/:userId** - adds a subscription
+
+    ```json
+    {
+        [
+            {
+                category, subcategory, event, tags
+            },
+        ]
+    }
+
+### heartbeats
+
+* POST **heartbeat/register/** - used to register a new heartbeat:
+
+    ```json
+    {
+        "category":"SLATE", 
+        "subcategory": "Squid", 
+        "event": "server down", 
+        "tags":["site", "instance"], 
+        "source":"Squid instance: %instance, running at %site, failed to send required number of heartbeats.",
+        "description": "This alarm gets generated if a squid instance does not send at least 4 heartbeats in last 60 seconds. Heartbeats are sent in 10 second intervals.",
+        "interval": 60, 
+        "min_expected":4
+    }
+    ```
+
+* PATCH **heartbeat/** - used to edit an existing heartbeat:
+
+    ```json
+    {
+        "category":"SLATE", 
+        "subcategory": "Squid", 
+        "event": "server down", 
+        "tags":["site", "instance"], 
+        "source":"Squid instance: %instance, running at %site, failed to send required number of heartbeats.",
+        "description": "This alarm gets generated if a squid instance does not send at least 4 heartbeats in last 60 seconds. Heartbeats are sent in 10 second intervals.",
+        "interval": 60, 
+        "min_expected":4
+    }
+    ```
+
+* GET **heartbeat/** - used to get list of registered heartbeats
+
+* DELETE **heartbeat/** - used to unregister a heartbeat:
+
+    ```json
+    {
+        "category":"SLATE", 
+        "subcategory": "Squid", 
+        "event": "server down"
+    }
+    ```
+
+* POST **heartbeat/** - used to accept a heartbeat:
+
+    ```json
+    {
+        "category":"SLATE", 
+        "subcategory": "Squid", 
+        "event": "server down", 
+        "site": "MWT2",
+        "instance" : "MWT2_Slate_01"
+    }
+    ```

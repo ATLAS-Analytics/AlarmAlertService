@@ -38,12 +38,15 @@ app.use(session({
 
 const usr = require('./routes/user');
 const alarms = require('./routes/alarms');
+const heartbeats = require('./routes/heartbeats');
 
 usr.init(config);
 alarms.init(config);
+heartbeats.init(config);
 
 app.use('/user', usr.router);
 app.use('/alarm', alarms.router);
+app.use('/heartbeat', heartbeats.router);
 
 // GLOBUS STUFF
 const bup = Buffer.from(`${globConf.CLIENT_ID}:${globConf.CLIENT_SECRET}`).toString('base64');
