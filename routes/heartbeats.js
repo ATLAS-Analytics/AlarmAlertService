@@ -2,213 +2,269 @@ const elasticsearch = require('@elastic/elasticsearch');
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const esUsersIndex = 'aaas_heartbeats';
+const esHeartbeatTopologyIndex = 'aaas_heartbeats_topology';
+const esHeartbeatIndex = 'aaas_heartbeats';
+
 let config;
 let es;
+const categories = [];
 
 const router = express.Router();
 const jsonParser = bodyParser.json();
 
+function hasTopology(obj) {
+  let found = true;
+  categories.forEach((c) => {
+    found = true;
+    config.TOPOLOGY_FIELDS.forEach((v) => {
+      if (c[v] !== obj[v]) {
+        found = false;
+        return false;
+      }
+      return true; // continue
+    });
+    if (found === true) return false; // break out
+    return true; // continue
+  });
+  return found;
+}
+
 function init(configuration) {
   config = configuration;
   es = new elasticsearch.Client(config.ES_HOST);
+  config.REQUIRED_HEARTBEAT_FIELDS = config.REQUIRED_HEARTBEAT_FIELDS.concat(config.TOPOLOGY_FIELDS);
+  config.REQUIRED_HEARTBEAT_TOPOLOGY_FIELDS = config.REQUIRED_HEARTBEAT_TOPOLOGY_FIELDS.concat(config.TOPOLOGY_FIELDS);
+  // load all active heartbeats
+  // create intervals for all of them
+  // setInterval(heartbeats.checkHeartbeats, 60000);
 }
 
-async function loadUser(userId = null) {
+async function checkHeartbeats() {
+  console.log('checking all heartbeats.');
+}
+
+async function loadHeartbeatTopology() {
+  console.log('loading heartbeats...');
   try {
-    let query = { match_all: {} };
-    if (userId) {
-      console.log('loading user\'s info...', userId);
-      query = { match: { _id: userId } };
-    } else {
-      console.log('loading all the users.');
-    }
     const response = await es.search(
-      { index: esUsersIndex, size: 1000, body: { query } },
+      {
+        index: esHeartbeatTopologyIndex,
+        size: 1000,
+        body: { query: { match_all: {} } },
+      },
     );
     if (response.body.hits.total.value === 0) {
-      console.log('User not found.');
+      console.log('No heartbeats found.');
       return false;
     }
-    if (userId) {
-      console.log('User found.');
-      const obj = response.body.hits.hits[0]._source;
-      // make sure all preferences are there
-      Object.entries(config.PREFERENCES).forEach(([key, value]) => {
-        // console.log(`${key}: ${value}`);
-        if (!(key in obj.preferences)) {
-          [, obj.preferences[key]] = value;
-        }
-      });
-      console.debug(obj.user);
-      return obj;
-    }
-
-    console.log('Users found.');
-    return response.body.hits.hits;
+    const { hits } = response.body.hits;
+    categories.length = 0;
+    hits.forEach((hit) => {
+      const s = hit._source;
+      // console.log(s);
+      categories.push(s);
+    });
+    // console.debug(categories);
+    return categories;
   } catch (err) {
     console.error(err);
     return false;
   }
 }
 
-async function writeUser(u) {
-  console.log('writing new user');
-  const defPref = {};
-  Object.entries(config.PREFERENCES).forEach(([key, value]) => {
+router.post('/register', jsonParser, async (req, res) => {
+  const b = req.body;
+  console.log('Adding heartbeat with body:\n', b);
+  if (b === undefined || b === null) {
+    res.status(400).send('nothing POSTed.\n');
+    return;
+  }
+
+  config.REQUIRED_HEARTBEAT_TOPOLOGY_FIELDS.forEach((v) => {
+    if (b[v] === undefined || b[v] === null) {
+      res.status(400).send(`${v} is required.\n`);
+    }
+  });
+
+  Object.entries(b).forEach(([key]) => {
     // console.log(`${key}: ${value}`);
-    [, defPref[key]] = value;
+    if (!(config.REQUIRED_HEARTBEAT_TOPOLOGY_FIELDS.includes(key))) {
+      console.log(`${key} not allowed.\n`);
+      delete b[key];
+    }
   });
 
   try {
     const response = await es.index({
-      index: esUsersIndex,
-      id: u.id,
-      refresh: true,
-      body: {
-        username: u.username,
-        affiliation: u.affiliation,
-        user: u.name,
-        email: u.email,
-        preferences: defPref,
-        subscriptions: [],
-        created_at: new Date().getTime(),
-      },
+      index: esHeartbeatTopologyIndex, body: b, refresh: true,
     });
-    console.log('response', response.body);
-    if (response.body.result === 'created') {
-      console.log('New user indexed.');
-      return true;
-    }
-    console.log('New user NOT indexed.');
-    return false;
+    console.log('Heartbeat category added.');
+    console.debug(response.body);
+    await loadHeartbeatTopology();
+    res.status(200).send('OK');
+    return;
   } catch (err) {
     console.error(err);
-    return false;
+    res.status(500).send(err.body);
   }
-}
-
-async function addIfNeeded(u) {
-  console.log('adding if needed:', u);
-  const res1 = await loadUser(u.id);
-  // console.log('res1', res1);
-  if (res1 === false) {
-    const res2 = await writeUser(u);
-    // console.log('res2', res2);
-  }
-}
-
-router.get('/', async (req, res) => {
-  res.json(await loadUser());
 });
 
-router.get('/:userId', async (req, res) => {
-  const { userId } = req.params;
-  res.json(await loadUser(userId));
-});
-
-router.delete('/:userId', (req, res) => {
-  const { userId } = req.params;
-  console.log('Deleting user with id:', userId);
-  es.deleteByQuery(
-    {
-      index: esUsersIndex,
-      refresh: true,
-      body: { query: { match: { _id: userId } } },
-    },
-    (err, response) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send('Error in deleting user.');
-        return;
-      }
-      if (response.body.deleted === 1) {
-        res.status(200).send('OK');
-        return;
-      }
-      console.log(response.body);
-      res.status(500).send('No user with that ID.');
-    },
-  );
-});
-
-router.post('/preferences/:userId', jsonParser, async (req, res) => {
-  const { userId } = req.params;
+router.patch('/', jsonParser, async (req, res) => {
   const b = req.body;
-  console.log(`Updating preferences for user ${userId} with body:\n`, b);
-  if (b === undefined || b === null || Object.keys(b).length === 0) {
-    res.status(400).send('nothing POSTed.\n');
+  console.log('Patching category with body:\n', b);
+  if (b === undefined || b === null) {
+    res.status(400).send('nothing PATCHEDed.\n');
     return;
   }
-  // console.log('Check that only allowed things are in.');
-  let disallowed = '';
+  config.TOPOLOGY_FIELDS.forEach((v) => {
+    if (b[v] === undefined || b[v] === null) {
+      res.status(400).send(`${v} is required.\n`);
+    }
+  });
+
+  // add only allowed things to edit source.
+  let source = '';
   Object.entries(b).forEach(([key, value]) => {
     // console.log(`${key}: ${value}`);
-    if (config.PREFERENCES[key] === undefined || config.PREFERENCES[key] === null) {
+    if (config.REQUIRED_HEARTBEAT_TOPOLOGY_FIELDS.includes(key)) {
+      source += `ctx._source["${key}"] = "${value}";`;
+    } else {
       console.log(`${key} not allowed.\n`);
-      disallowed += `${key} not allowed.\n`;
-    }
-    if (typeof value !== config.PREFERENCES[key].type) {
-      console.log(`Warning! ${key} has wrong type. It should be ${config.PREFERENCES[key].type}\n`);
     }
   });
-  if (disallowed.length > 0) {
-    res.status(400).send(disallowed);
-    return;
-  }
-  es.update({
-    index: esUsersIndex,
-    id: userId,
-    refresh: true,
-    body: {
-      doc: {
-        preferences: b,
+
+  await loadHeartbeatTopology();
+
+  // console.log('Check that the category was registered');
+  if (hasTopology(b)) {
+    console.debug('heartbeat category registered, lets update');
+    const updateBody = {
+      script: {
+        lang: 'painless',
+        source,
       },
-    },
-  }, (err, response) => {
-    if (err) {
-      console.error('cant update user preferences:\n', err);
-      res.status(500).send(`something went wrong:\n${err}`);
+      query: {
+        bool: {
+          must: [
+            { term: { category: b.category } },
+            { term: { subcategory: b.subcategory } },
+            { term: { event: b.event } },
+          ],
+        },
+      },
+    };
+
+    try {
+      const response = await es.updateByQuery({
+        index: esHeartbeatTopologyIndex, body: updateBody, refresh: true,
+      });
+      console.log('Category patched.');
+      console.debug(response.body);
+      await loadHeartbeatTopology();
+      res.status(200).send('OK');
       return;
+    } catch (err) {
+      console.error(err);
+      res.status(500).send(err.body);
     }
-    console.log('User preferences updated.');
-    console.debug(response.body);
-    res.status(200).send('OK');
-  });
+  } else {
+    res.status(400).send('no such category, subcategory or event allowed.');
+  }
 });
 
-router.post('/subscriptions/:userId', jsonParser, async (req, res) => {
-  const { userId } = req.params;
+router.delete('/', async (req, res) => {
   const b = req.body;
-  console.log(`Updating subscriptions for user ${userId} with body:\n`, b);
+  // console.debug('body:', b);
   if (b === undefined || b === null || Object.keys(b).length === 0) {
     res.status(400).send('nothing POSTed.\n');
     return;
   }
-  // TODO console.log('Check that only allowed things are in.');
-  // TODO check subscription not already there.
-  es.update({
-    index: esUsersIndex,
-    id: userId,
-    refresh: true,
-    body: {
-      doc: {
-        subscriptions: b,
+  const selector = [];
+  config.TOPOLOGY_FIELDS.forEach((v) => {
+    if (b[v] === undefined || b[v] === null) {
+      res.status(400).send(`${v} is required.\n`);
+    } else {
+      selector.push({ match: { v: b[v] } });
+    }
+  });
+  console.log('Deleting heartbeat:', selector);
+  try {
+    const response = await es.deleteByQuery({
+      index: esHeartbeatTopologyIndex,
+      body: {
+        query: {
+          bool: {
+            must: selector,
+          },
+        },
       },
-    },
+      refresh: true,
+    });
+    if (response.body.deleted > 0) {
+      await loadHeartbeatTopology();
+      res.status(200).send('OK');
+    } else {
+      console.log(response.body);
+      res.status(500).send('No heartbeats like that.');
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error in deleting heartbeat.');
+  }
+});
+
+router.post('/', jsonParser, async (req, res) => {
+  const b = req.body;
+  // console.debug('body:', b);
+  if (b === undefined || b === null || Object.keys(b).length === 0) {
+    res.status(400).send('nothing POSTed.\n');
+    return;
+  }
+  config.REQUIRED_HEARTBEAT_FIELDS.forEach((v) => {
+    if (b[v] === undefined || b[v] === null) {
+      res.status(400).send(`${v} is required.\n`);
+    }
+  });
+
+  // console.log('Check that only allowed things are in.');
+  Object.entries(b).forEach(([key]) => {
+    // console.log(`${key}: ${value}`);
+    if (!(config.REQUIRED_HEARTBEAT_FIELDS.includes(key)
+          || config.OPTIONAL_HEARTBEAT_FIELDS.includes(key))) {
+      console.log(`${key} not allowed.\n`);
+      delete b[key];
+    }
+  });
+
+  // console.log('Check that the category was registered');
+  if (hasTopology(b)) {
+    // console.debug('category registered');
+  } else {
+    res.status(400).send('no such category, subcategory or event allowed.');
+    return;
+  }
+
+  b.created_at = new Date().getTime();
+
+  es.index({
+    index: esHeartbeatIndex,
+    body: b,
   }, (err, response) => {
     if (err) {
-      console.error('cant update user subscriptions:\n', err);
+      console.error('cant index alarm:\n', b, err);
       res.status(500).send(`something went wrong:\n${err}`);
-      return;
+    } else {
+      console.log('New alarm indexed.');
+      // console.debug(response.body);
+      res.status(200).send('OK');
     }
-    console.log('User subscriptions updated.');
-    console.debug(response.body);
-    res.status(200).send('OK');
   });
+});
+
+router.get('/', async (req, res) => {
+  res.json(await loadHeartbeatTopology());
 });
 
 exports.router = router;
-exports.addIfNeeded = addIfNeeded;
-exports.loadUser = loadUser;
+// exports.checkHeartbeats = checkHeartbeats;
 exports.init = init;

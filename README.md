@@ -62,9 +62,15 @@ Content:
     {}
     ```
 
-* DEL **alarm/:category**
-* DEL **alarm/:category/:subcategory**
-* DEL **alarm/:category/:subcategory/:event**
+* DEL **alarm/** - deetes a category of alarm
+
+    ```json
+    {
+        "category":"SLATE", 
+        "subcategory": "Squid", 
+        "event": "server down"
+    }
+    ```
 
 ### user
 
@@ -100,7 +106,7 @@ Content:
         "subcategory": "Squid", 
         "event": "server down", 
         "tags":["site", "instance"], 
-        "source":"Squid instance: %instance, running at %site, failed to send required number of heartbeats.",
+        "template":"Squid instance: %instance, running at %site, failed to send required number of heartbeats.",
         "description": "This alarm gets generated if a squid instance does not send at least 4 heartbeats in last 60 seconds. Heartbeats are sent in 10 second intervals.",
         "interval": 60, 
         "min_expected":4
@@ -115,7 +121,7 @@ Content:
         "subcategory": "Squid", 
         "event": "server down", 
         "tags":["site", "instance"], 
-        "source":"Squid instance: %instance, running at %site, failed to send required number of heartbeats.",
+        "template":"Squid instance: %instance, running at %site, failed to send required number of heartbeats.",
         "description": "This alarm gets generated if a squid instance does not send at least 4 heartbeats in last 60 seconds. Heartbeats are sent in 10 second intervals.",
         "interval": 60, 
         "min_expected":4
@@ -141,7 +147,9 @@ Content:
         "category":"SLATE", 
         "subcategory": "Squid", 
         "event": "server down", 
-        "site": "MWT2",
-        "instance" : "MWT2_Slate_01"
+        "source": {
+            "site": "MWT2",
+            "instance" : "MWT2_Slate_01"
+        }
     }
     ```
