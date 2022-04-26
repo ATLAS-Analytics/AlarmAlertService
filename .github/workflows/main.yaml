@@ -3,7 +3,9 @@ name: Build ATLAS Alarm and Alert Frontend image
 on:
   push:
     branches:
-      - "main"
+      - "*"
+    tags:
+      - "*"
 
 jobs:
   docker:
@@ -12,19 +14,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Extract tag name
+        shell: bash
+        run: echo "##[set-output name=imagetag;]$(echo ${GITHUB_REF##*/})"
+        id: extract_tag_name
+
       - name: Docker Build & Push Action
         uses: mr-smithers-excellent/docker-build-push@v5.6
         with:
           image: ivukotic/aaasf
-          tags: latest, ${{ github.sha }}
+          tags: ${{ github.sha }}, ${{ steps.extract_tag_name.outputs.imagetag }}
           registry: docker.io
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Repository Dispatch
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.AAAS_GITOPS_DEPLOY_TRIGGER }}
-          repository: maniaclab/flux_af
-          event-type: gitops-aaasf-app-trigger
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+      # - name: Repository Dispatch
+      #   uses: peter-evans/repository-dispatch@v1
+      #   with:
+      #     token: ${{ secrets.AAAS_GITOPS_DEPLOY_TRIGGER }}
+      #     repository: maniaclab/flux_af
+      #     event-type: gitops-aaasf-app-trigger
+      #     client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
