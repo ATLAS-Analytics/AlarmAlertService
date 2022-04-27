@@ -31,11 +31,7 @@ block content
                                     li.toc-entry.toc-h4 
                                         a(href="#api_alarm_list") List
                                     li.toc-entry.toc-h4 
-                                        a(href="#api_alarm_del_cat") Delete category
-                                    li.toc-entry.toc-h4 
-                                        a(href="#api_alarm_del_subcat") Delete subcategory
-                                    li.toc-entry.toc-h4 
-                                        a(href="#api_alarm_del_event") Delete event
+                                        a(href="#api_alarm_del_event") Delete Alarm Category
                             li.toc-entry.toc-h3
                                 a(href="#api_user") User
                                 ul
@@ -49,6 +45,19 @@ block content
                                         a(href="#api_user_update_preferences") Update preferences
                                     li.toc-entry.toc-h4 
                                         a(href="#api_user_update_subscriptions") Update subscriptions
+                            li.toc-entry.toc-h3
+                                a(href="#api_heartbeat") Heartbeats
+                                ul
+                                    li.toc-entry.toc-h4 
+                                        a(href="#api_heartbeat_categories") Categories
+                                    li.toc-entry.toc-h4 
+                                        a(href="#api_heartbeat_register") Register
+                                    li.toc-entry.toc-h4 
+                                        a(href="#api_heartbeat_create") Create
+                                    li.toc-entry.toc-h4 
+                                        a(href="#api_heartbeat_list") List
+                                    li.toc-entry.toc-h4 
+                                        a(href="#api_heartbeat_del_event") Delete Heartbeat Category
 
 
             main.col-12.col-md-9.col-xl-8.py-md-3.pl-md-5.bd-content
@@ -197,26 +206,19 @@ block content
                                     "period" : 6
                                 }              
 
-                h4#api_alarm_del_cat Delete Category
+                h4#api_alarm_del_event Delete Alarm Category
                 div(style="margin:20px;")
                     p.font-weight-normal
-                        | #[strong DEL] #[em /alarm/:category]
+                        | #[strong DEL] #[em /alarm/]
                     p.font-weight-normal
-                        | Unregisters alarm category and all subcategories and events.
-                        | All alarms created are deleted. Use with caution! 
-
-                h4#api_alarm_del_subcat Delete Subcategory
-                div(style="margin:20px;")
-                    p.font-weight-normal
-                        | #[strong DEL] #[em /alarm/:category/:subcategory]
-                    p.font-weight-normal
-                        | Unregisters alarm subcategory and all events.
-                        | All alarms created are deleted. Use with caution! 
-                               
-                h4#api_alarm_del_event Delete Event
-                div(style="margin:20px;")
-                    p.font-weight-normal
-                        | #[strong DEL] #[em /alarm/:category/:subcategory/:event]
+                        | BODY raw(JSON)
+                        pre
+                            code. 
+                                {
+                                    "category" : "",
+                                    "subcategory" : "",
+                                    "event" : ""
+                                }    
                     p.font-weight-normal
                         | Unregisters alarm event.
                         | All alarms created are deleted. Use with caution! 
@@ -283,3 +285,104 @@ block content
                         | Updates user subscriptions. 
                         | Body has JSON array of all alarms user will be subscribed.
                         | Only alarms currently configured in the system are allowed.
+
+                
+                                h3#api_alarm Alarm
+                p.font-weight-normal
+
+
+
+                h3#api_heartbeat Heartbeat
+
+                h4#api_heartbeat_categories List Categories
+                div(style="margin:20px;")
+                    p.font-weight-normal
+                        | #[strong GET] #[em /heartbeat/categories]
+                    p.font-weight-normal
+                        | returns JSON formated information on all currently registered heartbeat categories.
+
+                h4#api_heartbeat_register Registering heartbeat
+                div(style="margin:20px;")
+                    p.font-weight-normal
+                        | #[strong POST] #[em /heartbeat/register]
+                    p.font-weight-normal
+                        | BODY raw(JSON)
+                        pre
+                            code. 
+                                {
+                                    "category": "",
+                                    "subcategory": "",
+                                    "event": "",
+                                    "description": "",
+                                    "template": "",
+                                    "interval": 60,
+                                    "min_expected": 4
+                                }
+
+                h4#api_heartbeat_register Editing heartbeat
+                div(style="margin:20px;")
+                    p.font-weight-normal
+                        | #[strong PATCH] #[em /heartbeat/]
+                    p.font-weight-normal
+                        | BODY raw(JSON)
+                        pre
+                            code. 
+                                {
+                                    "category": "",
+                                    "subcategory": "",
+                                    "event": "",
+                                    "description": "",
+                                    "template": "",
+                                    "interval": 60,
+                                    "min_expected": 4
+                                }
+
+                h4#api_heartbeat_create Creating heartbeat
+                div(style="margin:20px;")
+                    p.font-weight-normal
+                        | #[strong POST] #[em /heartbeat/]
+                    p.font-weight-normal
+                        | BODY raw(JSON)
+                        pre
+                            code. 
+                                {
+                                    "category" : "",
+                                    "subcategory": "",
+                                    "event": "",
+                                    "tag":"",
+                                    "body":"",
+                                    "source": {"xxx": "", "yyy": "", ...}
+                                }
+                    
+                h4#api_heartbeat_list List heartbeats
+                div(style="margin:20px;")
+                    p.font-weight-normal
+                        | #[strong POST] #[em /heartbeat/fetch]
+                    p.font-weight-normal
+                        | BODY raw(JSON)
+                        pre
+                            code. 
+                                {
+                                    "category" : "",
+                                    "subcategory" : "",
+                                    "event" : "",
+                                    "period" : 6
+                                }              
+
+                h4#api_heartbeat_del_event Delete heartbeat Category
+                div(style="margin:20px;")
+                    p.font-weight-normal
+                        | #[strong DEL] #[em /heartbeat/]
+                    p.font-weight-normal
+                        | BODY raw(JSON)
+                        pre
+                            code. 
+                                {
+                                    "category" : "",
+                                    "subcategory" : "",
+                                    "event" : ""
+                                }    
+                    p.font-weight-normal
+                        | Unregisters heartbeat event.
+                        | All heartbeats created are deleted. Use with caution! 
+                               

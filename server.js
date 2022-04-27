@@ -195,18 +195,20 @@ app.get('/authcallback', (req, res) => {
 app.get('/subscriptions', requiresLogin, async (req, res) => {
   console.log(`showing all alarms to user: ${req.session.user_id}`);
   const userInfo = await usr.loadUser(req.session.user.id);
-  const categories = await alarms.loadCategories();
+  const categories = await alarms.loadAlarmTopology();
+  const heartbeatsTopology = await heartbeats.loadHeartbeatTopology();
   // console.log('userINFO', userInfo);
   // TODO logic if returned info is false
   userInfo.loggedIn = true;
   userInfo.userId = req.session.user.id;
   userInfo.categories = categories;
+  userInfo.heartbeatsTopology = heartbeatsTopology;
   res.render('subscriptions', userInfo);
 });
 
 app.get('/viewer', requiresLogin, async (req, res) => {
   const data = {};
-  data.categories = await alarms.loadCategories();
+  data.categories = await alarms.loadAlarmTopology();
   if (req.session.user !== undefined && req.session.user.id !== undefined) {
     data.loggedIn = true;
   }

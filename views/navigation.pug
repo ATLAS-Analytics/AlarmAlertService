@@ -8,6 +8,16 @@ nav#mainNav.navbar.navbar-dark.bg-dark.sticky-top
       a.nav-link(href='/viewer') Alarms
       a.nav-link(href='/subscriptions') Subscriptions
 
+      a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-expanded='false')
+        | Dropdown 
+        span.caret
+      ul.dropdown-menu(role='menu')
+        li
+          a(href='#') Action
+        li
+          a(href='#') Another action
+
+
   nav.nav.navbar-right
     if (!loggedIn)
       a.nav-link(href='/login') 

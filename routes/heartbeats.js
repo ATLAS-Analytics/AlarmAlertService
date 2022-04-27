@@ -269,5 +269,6 @@ router.get('/', async (req, res) => {
 });
 
 exports.router = router;
+exports.loadHeartbeatTopology = loadHeartbeatTopology;
 // exports.checkHeartbeats = checkHeartbeats;
 exports.init = init;
