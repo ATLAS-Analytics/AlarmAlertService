@@ -196,13 +196,11 @@ app.get('/subscriptions', requiresLogin, async (req, res) => {
   console.log(`showing all alarms to user: ${req.session.user_id}`);
   const userInfo = await usr.loadUser(req.session.user.id);
   const categories = await alarms.loadAlarmTopology();
-  const heartbeatsTopology = await heartbeats.loadHeartbeatTopology();
   // console.log('userINFO', userInfo);
   // TODO logic if returned info is false
   userInfo.loggedIn = true;
   userInfo.userId = req.session.user.id;
   userInfo.categories = categories;
-  userInfo.heartbeatsTopology = heartbeatsTopology;
   res.render('subscriptions', userInfo);
 });
 
@@ -213,6 +211,27 @@ app.get('/viewer', requiresLogin, async (req, res) => {
     data.loggedIn = true;
   }
   res.render('viewer', data);
+});
+
+app.get('/heartbeats_subscriptions', requiresLogin, async (req, res) => {
+  console.log(`showing all heartbeats to user: ${req.session.user_id}`);
+  const userInfo = await usr.loadUser(req.session.user.id);
+  const heartbeatsTopology = await heartbeats.loadHeartbeatTopology();
+  // console.log('userINFO', userInfo);
+  // TODO logic if returned info is false
+  userInfo.loggedIn = true;
+  userInfo.userId = req.session.user.id;
+  userInfo.heartbeatsTopology = heartbeatsTopology;
+  res.render('heartbeats_subscriptions', userInfo);
+});
+
+app.get('/heartbeats_viewer', requiresLogin, async (req, res) => {
+  const data = {};
+  data.categories = await heartbeats.loadHeartbeatTopology();
+  if (req.session.user !== undefined && req.session.user.id !== undefined) {
+    data.loggedIn = true;
+  }
+  res.render('heartbeats_viewer', data);
 });
 
 app.get('/docs', async (req, res) => {

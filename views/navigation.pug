@@ -5,8 +5,18 @@ nav#mainNav.navbar.navbar-dark.bg-dark.sticky-top
     a.nav-link(href='./') Home
     a.nav-link(href='/docs') Docs
     if (loggedIn)
-      a.nav-link(href='/viewer') Alarms
-      a.nav-link(href='/subscriptions') Subscriptions
+      //- a.nav-link(href='/viewer') Alarms
+      //- a.nav-link(href='/subscriptions') Subscriptions
+
+      div.dropdown
+        a.nav-link.dropdown-toggle(href='#', id="navbarDropdown", data-bs-toggle="dropdown", role='button', aria-expanded='false')
+          | Alarms
+          span.caret
+        ul.dropdown-menu(aria-labelledby="navbarDropdown")
+          li
+            a.nav-link(href='/viewer') View
+          li
+            a.nav-link(href='/subscriptions') Subscriptions
 
       div.dropdown
         a.nav-link.dropdown-toggle(href='#', id="navbarDropdown", data-bs-toggle="dropdown", role='button', aria-expanded='false')
@@ -14,9 +24,9 @@ nav#mainNav.navbar.navbar-dark.bg-dark.sticky-top
           span.caret
         ul.dropdown-menu(aria-labelledby="navbarDropdown")
           li
-            a.nav-link(href='#') View
+            a.nav-link(href='/heartbeats_viewer') View
           li
-            a.nav-link(href='#') Subscriptions
+            a.nav-link(href='/heartbeats_subscriptions') Subscriptions
 
 
   nav.nav.navbar-right
