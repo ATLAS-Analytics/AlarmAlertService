@@ -185,7 +185,9 @@ router.delete('/', async (req, res) => {
     if (b[v] === undefined || b[v] === null) {
       res.status(400).send(`${v} is required.\n`);
     } else {
-      selector.push({ match: { v: b[v] } });
+      const obj = { match: {} };
+      obj.match[v] = b[v];
+      selector.push(obj);
     }
   });
   console.log('Deleting heartbeat:', selector);
