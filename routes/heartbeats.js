@@ -87,7 +87,7 @@ router.post('/register', jsonParser, async (req, res) => {
     }
   });
 
-  Object.entries(b).forEach(([key]) => {
+  Object.entries(b).forEach(([key, value]) => {
     console.log(`${key}: ${value}`);
     if (!(config.REQUIRED_HEARTBEAT_TOPOLOGY_FIELDS.includes(key))) {
       console.log(`${key} not allowed.\n`);
