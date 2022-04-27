@@ -6,6 +6,8 @@ block content
             .col-lg-5.mx-auto
                 h2 Alarms
                 div(id="SimpleJSTree")
+                h2 Heartbeats
+                div(id="HeartbeatsJSTree")
 
             .col-lg-7.mx-auto
                 //- h2 Details
@@ -125,7 +127,7 @@ block extra_scripts
         //console.log('rendered categories data',catdata);
         //console.log('test jstree data',treedata);
 
-        $('#SimpleJSTree').jstree({
+        $('#SimpleJSTree #HeartbeatsJSTree').jstree({
             core: {
                 themes: {
                     variant: "large",
@@ -135,7 +137,10 @@ block extra_scripts
             },    
             plugins: ["checkbox"]
         });
-        $('#SimpleJSTree').on("changed.jstree", function (e, data) {
+        
+        $('#SimpleJSTree #AlarmsJSTree').jstree('close_all');
+
+        $('#SimpleJSTree #HeartbeatsJSTree').on("changed.jstree", function (e, data) {
             var cn=data.node;
             //- console.log('changed:',cn);
             if (cn===undefined){return;}
@@ -194,7 +199,7 @@ block extra_scripts
             st.clear().rows.add(nd).draw();
         });
 
-        $('#SimpleJSTree').bind("hover_node.jstree", function(e, data) {
+        $('#SimpleJSTree #HeartbeatsJSTree').bind("hover_node.jstree", function(e, data) {
             //- console.log('data', data);
             if (data.node.children.length === 0) {
                 //- $('#description').innerHTML=data.node.data;
