@@ -62,7 +62,7 @@ Content:
     {}
     ```
 
-* DEL **alarm/** - deetes a category of alarm
+* DEL **alarm/** - deletes a category of alarm
 
     ```json
     {
