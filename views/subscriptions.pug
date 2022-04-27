@@ -194,7 +194,7 @@ block extra_scripts
         $('#SimpleJSTree').jstree('close_all');
         $('#HeartbeatsJSTree').jstree('close_all');
 
-        $('#SimpleJSTree #HeartbeatsJSTree').on("changed.jstree", function (e, data) {
+        $('#SimpleJSTree').on("changed.jstree", function (e, data) {
             var cn=data.node;
             //- console.log('changed:',cn);
             if (cn===undefined){return;}
@@ -253,7 +253,66 @@ block extra_scripts
             st.clear().rows.add(nd).draw();
         });
 
-        $('#SimpleJSTree #HeartbeatsJSTree').bind("hover_node.jstree", function(e, data) {
+        $('#HeartbeatsJSTree').on("changed.jstree", function (e, data) {
+            var cn=data.node;
+            //- console.log('changed:',cn);
+            if (cn===undefined){return;}
+            var selected=cn.state.selected;
+            var newData=[];
+            if (cn.id.split('VV').length === 3){ //- check if this is leaf
+                var vs=cn.id.replaceAll('_', ' ').split('VV');
+                newData.push({'category':vs[0],'subcategory':vs[1], 'event':vs[2], 'tags':'*'});
+            } else {
+                 cn.children_d.forEach(c=>{
+                    if (c.split('VV').length===3){
+                        var vs=c.replaceAll('_', ' ').split('VV');
+                        newData.push({'category':vs[0],'subcategory':vs[1], 'event':vs[2], 'tags':'*'});
+                    }
+                })
+            }
+            
+            var st=$('#subscriptions_table').DataTable();
+            oldData=st.data().toArray();
+            console.log('newdata', newData);
+            console.log('olddata', oldData);
+            
+            var nd=[];
+            if (selected === true){ // adding
+                nd=nd.concat(oldData);
+                newData.forEach(nr=>{
+                    var found=false;
+                    oldData.forEach(or=>{
+                        if (nr['category'] === or['category'] && nr['subcategory'] === or['subcategory'] && nr['event']===or['event']){
+                            found=true;
+                        }
+                    })
+                    if (found === false){
+                        var cleanedNR = {
+                            category:nr['category'],
+                            subcategory:nr['subcategory'],
+                            event:nr['event'],
+                            tags:'*'
+                        };
+                        nd.push(cleanedNR);
+                    }
+                })
+            }else{ // removing 
+                oldData.forEach(or=>{
+                    var found=false;
+                    newData.forEach(nr=>{
+                        if (nr['category'] === or['category'] && nr['subcategory'] === or['subcategory'] && nr['event']===or['event']){
+                            found=true;
+                        }
+                    })
+                    if (found === false){
+                        nd.push(or);
+                    }
+                })
+            }
+            st.clear().rows.add(nd).draw();
+        });
+
+        $('#SimpleJSTree').bind("hover_node.jstree", function(e, data) {
             //- console.log('data', data);
             if (data.node.children.length === 0) {
                 //- $('#description').innerHTML=data.node.data;
@@ -261,6 +320,14 @@ block extra_scripts
             };
         });       
         
+        $('#HeartbeatsJSTree').bind("hover_node.jstree", function(e, data) {
+            //- console.log('data', data);
+            if (data.node.children.length === 0) {
+                //- $('#description').innerHTML=data.node.data;
+                $('#' + data.node.id).attr('title', data.node.data);
+            };
+        });       
+
         $('#dtButton').click((event) => {
             subdata=$('#subscriptions_table').DataTable().data().toArray();
             toSend=JSON.stringify(subdata);
