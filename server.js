@@ -215,7 +215,6 @@ app.get('/viewer', requiresLogin, async (req, res) => {
   res.render('viewer', data);
 });
 
-
 app.get('/heartbeats_viewer', requiresLogin, async (req, res) => {
   const data = {};
   data.categories = await heartbeats.loadHeartbeatTopology();

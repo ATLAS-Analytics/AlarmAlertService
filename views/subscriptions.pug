@@ -28,6 +28,7 @@ block extra_scripts
     script.
         $('[data-toggle="tooltip"]').tooltip();
         var catdata = !{JSON.stringify(categories)};
+        var hrtdata = !{JSON.stringify(heartbeatsTopology)};
         var subdata = !{JSON.stringify(subscriptions)};
 
         ( function () {
@@ -68,7 +69,9 @@ block extra_scripts
         //-     }
         //- }
 
-        treedata = []
+        treedata = [];
+        hartData = [];
+
         for (i=0; i<catdata.length; i++) {
             treedata.push({
                 "id":catdata[i].category.replaceAll(' ', '_'),
@@ -85,6 +88,25 @@ block extra_scripts
                 "parent": (catdata[i].category+"VV"+catdata[i].subcategory).replaceAll(' ', '_'),
                 "text":catdata[i].event,
                 "data":catdata[i].description
+                });
+        };
+
+        for (i=0; i<hrtdata.length; i++) {
+            hartData.push({
+                "id":hrtdata[i].category.replaceAll(' ', '_'),
+                "parent":"#",
+                "text":hrtdata[i].category
+                });
+            hartData.push({
+                "id": (hrtdata[i].category+"VV"+hrtdata[i].subcategory).replaceAll(' ', '_'),
+                "parent":hrtdata[i].category.replaceAll(' ', '_'),
+                "text":hrtdata[i].subcategory
+                });
+            hartData.push({
+                "id":(hrtdata[i].category+"VV"+hrtdata[i].subcategory+"VV"+hrtdata[i].event).replaceAll(' ', '_'),
+                "parent": (hrtdata[i].category+"VV"+hrtdata[i].subcategory).replaceAll(' ', '_'),
+                "text":hrtdata[i].event,
+                "data":hrtdata[i].description
                 });
         };
 
@@ -110,6 +132,25 @@ block extra_scripts
             }
         }
 
+        for (i=0; i<hartData.length; i+=3) {
+            cat = hartData[i].text;
+            sub = hartData[i+1].text;
+            eve = hartData[i+2].text;
+            var arr = {"category":cat,"subcategory":sub,"event":eve};
+            for (j=0; j<subdata.length; j++) {
+                //console.log('cat arr',arr);
+                //console.log(subdata[j]);
+                if (arr.category === subdata[j].category) {
+                    if (arr.subcategory === subdata[j].subcategory) {
+                        if (arr.event === subdata[j].event) {
+                            //console.log('match',arr);
+                            hartData[i+2].state = {"loaded":true, "opened": false, "selected":true, "disabled":false}
+                        }
+                    }
+                }
+            }
+        }
+
         function multiDimensionalUnique(arr) {
             var uniques = [];
             var itemsFound = {};
@@ -122,12 +163,13 @@ block extra_scripts
             return uniques;
         }
         treedata = multiDimensionalUnique(treedata)
+        hartData = multiDimensionalUnique(hartData)
  
         //console.log('rendered subscriptions data',subdata);
         //console.log('rendered categories data',catdata);
         //console.log('test jstree data',treedata);
 
-        $('#SimpleJSTree #HeartbeatsJSTree').jstree({
+        $('#SimpleJSTree').jstree({
             core: {
                 themes: {
                     variant: "large",
@@ -138,7 +180,19 @@ block extra_scripts
             plugins: ["checkbox"]
         });
         
-        $('#SimpleJSTree #AlarmsJSTree').jstree('close_all');
+        $('#HeartbeatsJSTree').jstree({
+            core: {
+                themes: {
+                    variant: "large",
+                    icons: false
+                },
+                data: hartData
+            },    
+            plugins: ["checkbox"]
+        });
+
+        $('#SimpleJSTree').jstree('close_all');
+        $('#HeartbeatsJSTree').jstree('close_all');
 
         $('#SimpleJSTree #HeartbeatsJSTree').on("changed.jstree", function (e, data) {
             var cn=data.node;
