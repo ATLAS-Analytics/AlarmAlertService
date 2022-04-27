@@ -81,13 +81,14 @@ router.post('/register', jsonParser, async (req, res) => {
   }
 
   config.REQUIRED_HEARTBEAT_TOPOLOGY_FIELDS.forEach((v) => {
+    console.log(`checking for: ${v}`);
     if (b[v] === undefined || b[v] === null) {
       res.status(400).send(`${v} is required.\n`);
     }
   });
 
   Object.entries(b).forEach(([key]) => {
-    // console.log(`${key}: ${value}`);
+    console.log(`${key}: ${value}`);
     if (!(config.REQUIRED_HEARTBEAT_TOPOLOGY_FIELDS.includes(key))) {
       console.log(`${key} not allowed.\n`);
       delete b[key];

@@ -106,7 +106,7 @@ Content:
         "subcategory": "Squid", 
         "event": "server down", 
         "tags":["site", "instance"], 
-        "template":"Squid instance: %instance, running at %site, failed to send required number of heartbeats.",
+        "template":"Squid instance: %{instance}, running at %{site}, failed to send required number of heartbeats.",
         "description": "This alarm gets generated if a squid instance does not send at least 4 heartbeats in last 60 seconds. Heartbeats are sent in 10 second intervals.",
         "interval": 60, 
         "min_expected":4
