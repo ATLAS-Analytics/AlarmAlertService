@@ -29,20 +29,22 @@ function hasTopology(obj) {
   return found;
 }
 
-function init(configuration) {
-  config = configuration;
-  es = new elasticsearch.Client(config.ES_HOST);
-  config.REQUIRED_HEARTBEAT_FIELDS = config.REQUIRED_HEARTBEAT_FIELDS.concat(config.TOPOLOGY_FIELDS);
-  config.REQUIRED_HEARTBEAT_TOPOLOGY_FIELDS = config.REQUIRED_HEARTBEAT_TOPOLOGY_FIELDS.concat(config.TOPOLOGY_FIELDS);
-  // load all active heartbeats
-  // create intervals for all of them
-  // setInterval(heartbeats.checkHeartbeats, 60000);
+async function checkHeartbeat(c) {
+  console.log('checking for alarm state in:', c);
 }
 
-async function checkHeartbeats() {
-  console.log('checking all heartbeats.');
+async function deleteTopology(obj) {
+  for (let i = 0; i < categories.length; i++) {
+    if (categories[i].category === obj.category
+      && categories[i].subcategory === obj.subcategory
+      && categories[i].event === obj.event) {
+      console.log('deleting category:', obj);
+      clearInterval(categories[i].intervalID);
+      delete categories(i);
+      break;
+    }
+  }
 }
-
 async function loadHeartbeatTopology() {
   console.log('loading heartbeats...');
   try {
@@ -58,11 +60,12 @@ async function loadHeartbeatTopology() {
       return false;
     }
     const { hits } = response.body.hits;
-    categories.length = 0;
     hits.forEach((hit) => {
       const s = hit._source;
-      // console.log(s);
-      categories.push(s);
+      if (!hasTopology(s)) {
+        s.intervalID = setInterval(checkHeartbeat, s.interval * 1000, s);
+        categories.push(s);
+      }
     });
     // console.debug(categories);
     return categories;
@@ -70,6 +73,14 @@ async function loadHeartbeatTopology() {
     console.error(err);
     return false;
   }
+}
+
+function init(configuration) {
+  config = configuration;
+  es = new elasticsearch.Client(config.ES_HOST);
+  config.REQUIRED_HEARTBEAT_FIELDS = config.REQUIRED_HEARTBEAT_FIELDS.concat(config.TOPOLOGY_FIELDS);
+  config.REQUIRED_HEARTBEAT_TOPOLOGY_FIELDS = config.REQUIRED_HEARTBEAT_TOPOLOGY_FIELDS.concat(config.TOPOLOGY_FIELDS);
+  loadHeartbeatTopology();
 }
 
 router.post('/register', jsonParser, async (req, res) => {
@@ -133,6 +144,8 @@ router.patch('/', jsonParser, async (req, res) => {
       console.log(`${key} not allowed.\n`);
     }
   });
+
+  deleteTopology(b);
 
   await loadHeartbeatTopology();
 
@@ -204,6 +217,7 @@ router.delete('/', async (req, res) => {
       refresh: true,
     });
     if (response.body.deleted > 0) {
+      deleteTopology(b);
       await loadHeartbeatTopology();
       res.status(200).send('OK');
     } else {
