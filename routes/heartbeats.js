@@ -40,11 +40,12 @@ async function deleteTopology(obj) {
       && categories[i].event === obj.event) {
       console.log('deleting category:', obj);
       clearInterval(categories[i].intervalID);
-      delete categories(i);
+      delete categories[i];
       break;
     }
   }
 }
+
 async function loadHeartbeatTopology() {
   console.log('loading heartbeats...');
   try {
