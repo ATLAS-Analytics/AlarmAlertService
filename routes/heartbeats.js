@@ -42,17 +42,18 @@ function getCategorySelector(c) {
 
 async function checkHeartbeat(c) {
   console.log('checking for alarm state in:', c.category, c.subcategory, c.event);
-
+  const selector = getCategorySelector(c);
+  selector.push({ range: { created_at: { gte: `now-${c.interval}s/s` } } });
   try {
     const response = await es.count({
       index: esHeartbeatIndex,
-      body: {
-        query: { bool: { must: getCategorySelector(c) } }
-      },
+      body: { query: { bool: { must: selector } } },
     });
-    console.log('res: ', response);
-    if (response.body.hits.total.value === 0) {
-      console.log('No heartbeats found.');
+    console.debug('heartbeats found: ', response.body.count);
+    if (response.body.count < c.min_expected) {
+      console.log('Not enough heartbeats found.');
+    } else {
+      console.log('it is fine.');
     }
   } catch (err) {
     console.error(err);
@@ -90,7 +91,7 @@ async function loadHeartbeatTopology() {
     hits.forEach((hit) => {
       const s = hit._source;
       if (!knownTopology(s)) {
-        console.log('cat found:', s, 'createing interval');
+        console.log('heartbeat adding:', s, 'creating interval');
         s.intervalID = setInterval(checkHeartbeat, s.interval * 1000, s)[Symbol.toPrimitive]();
         categories.push(s);
       }
@@ -317,20 +318,17 @@ router.post('/fetch', jsonParser, async (req, res) => {
     res.status(400).send('nothing POSTed.\n');
     return;
   }
-  const selector = [];
+
   config.TOPOLOGY_FIELDS.forEach((v) => {
     if (b[v] === undefined || b[v] === null) {
       res.status(400).send(`${v} is required.\n`);
-    } else {
-      const obj = { match: {} };
-      obj.match[v] = b[v];
-      selector.push(obj);
     }
   });
   if (b.period === undefined || b.period === null) {
     res.status(400).send('period is required. Just number of hours.\n');
   }
 
+  const selector = getCategorySelector(b);
   selector.push({ range: { created_at: { gte: `now-${b.period}h/h` } } });
   console.log('Getting heartbeats:');
   console.dir(selector, { depth: null });
