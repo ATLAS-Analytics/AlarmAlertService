@@ -191,8 +191,8 @@ block extra_scripts
             plugins: ["checkbox"]
         });
 
-        $('#SimpleJSTree').jstree('close_all');
-        $('#HeartbeatsJSTree').jstree('close_all');
+        $('#SimpleJSTree').jstree('close_all',-1);
+        $('#HeartbeatsJSTree').jstree('close_all',-1);
 
         $('#SimpleJSTree').on("changed.jstree", function (e, data) {
             var cn=data.node;
