@@ -30,7 +30,7 @@ function knownTopology(obj) {
 }
 
 async function checkHeartbeat(c) {
-  console.log('checking for alarm state in:', c);
+  console.log('checking for alarm state in:', c.category, c.subcategory, c.event);
 }
 
 async function deleteTopology(obj) {
@@ -60,18 +60,15 @@ async function loadHeartbeatTopology() {
       return false;
     }
     const { hits } = response.body.hits;
-    console.log('existing cats:', categories);
     hits.forEach((hit) => {
       const s = hit._source;
-      console.log('--->', s);
       if (!knownTopology(s)) {
         console.log('cat found:', s, 'createing interval');
         s.intervalID = setInterval(checkHeartbeat, s.interval * 1000, s);
         categories.push(s);
       }
     });
-    console.log('latest cats:', categories);
-    console.dir(categories);
+    // console.dir(categories);
     return categories;
   } catch (err) {
     console.error(err);
