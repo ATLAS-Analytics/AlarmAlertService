@@ -177,7 +177,7 @@ block extra_scripts
                             return d.toISOString().substr(0,19).replace('T',' ');
                         }
                     },
-                    {title:'Body', data: 'body'},
+                    //- {title:'Body', data: 'body'},
                     {title:'Tags', data: 'tags'},
                     //- ,render: function (data, type, row){
                         //- return data.replace(',',' ');
@@ -190,13 +190,13 @@ block extra_scripts
                             return sour;
                         }
                     },
-                    {title:"Annotation", data: 'annotation',
-                        render: function (data, type, row) {
-                                //- console.log('data:',data,'row:',row );
-                                if (row.annotation === undefined){row.annotation = '';}
-                                return '<input class="form-control annInput" name="Annotations" type="text" value = ' + row.annotation + ' >';
-                            }
-                    },
+                    //- {title:"Annotation", data: 'annotation',
+                    //-     render: function (data, type, row) {
+                    //-             //- console.log('data:',data,'row:',row );
+                    //-             if (row.annotation === undefined){row.annotation = '';}
+                    //-             return '<input class="form-control annInput" name="Annotations" type="text" value = ' + row.annotation + ' >';
+                    //-         }
+                    //- },
                 ],
 
                 //- "drawCallback": function( settings ) {
