@@ -64,7 +64,7 @@ async function loadHeartbeatTopology() {
       const s = hit._source;
       if (!knownTopology(s)) {
         console.log('cat found:', s, 'createing interval');
-        s.intervalID = setInterval(checkHeartbeat, s.interval * 1000, s);
+        s.intervalID = setInterval(checkHeartbeat, s.interval * 1000, s)[Symbol.toPrimitive]();
         categories.push(s);
       }
     });
