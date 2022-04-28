@@ -325,20 +325,15 @@ block extra_scripts
             };
         });       
 
-        $("#SimpleJSTree").bind('ready.jstree', function(event, data) {
-        var $tree = $(this);
-        $tree.jstree().close_all();
-        //- $($tree.jstree().get_json($tree, {
-        //-     flat: true
-        //- }))
-        //- .each(function(index, value) {
-        //-     var node = $("#SimpleJSTree").jstree().get_node(this.id).clo
-        //-     var lvl = node.parents.length;
-        //-     if (lvl = 1) {
-        //-     node.close_node(this, true);
-        //-     }    
-        //- });
+        $("#SimpleJSTree, #HeartbeatsJSTree").bind('ready.jstree', function(event, data) {
+            var $tree = $(this);
+            $tree.jstree().close_all();
         });
+
+        //- $("#HeartbeatsJSTree").bind('ready.jstree', function(event, data) {
+        //-     var $tree = $(this);
+        //-     $tree.jstree().close_all();
+        //- });
 
         $('#dtButton').click((event) => {
             subdata=$('#subscriptions_table').DataTable().data().toArray();
