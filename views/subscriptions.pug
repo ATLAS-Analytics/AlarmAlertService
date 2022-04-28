@@ -178,7 +178,7 @@ block extra_scripts
                 data: treedata
             },    
             plugins: ["checkbox"]
-        }).close_all();
+        });
         
         $('#HeartbeatsJSTree').jstree({
             core: {
@@ -189,7 +189,7 @@ block extra_scripts
                 data: hartData
             },    
             plugins: ["checkbox"]
-        }).close_all();
+        });
 
         $('#SimpleJSTree').on("changed.jstree", function (e, data) {
             var cn=data.node;
@@ -324,6 +324,20 @@ block extra_scripts
                 $('#' + data.node.id).attr('title', data.node.data);
             };
         });       
+
+        $("#SimpleJSTree").bind('ready.jstree', function(event, data) {
+        var $tree = $(this);
+        $($tree.jstree().get_json($tree, {
+            flat: true
+        }))
+        .each(function(index, value) {
+            var node = $("#SimpleJSTree").jstree().get_node(this.id);
+            var lvl = node.parents.length;
+            if (lvl = 1) {
+            node.close_node(this, true);
+            }    
+        });
+        });
 
         $('#dtButton').click((event) => {
             subdata=$('#subscriptions_table').DataTable().data().toArray();
