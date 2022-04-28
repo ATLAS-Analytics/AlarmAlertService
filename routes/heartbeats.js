@@ -60,14 +60,18 @@ async function loadHeartbeatTopology() {
       return false;
     }
     const { hits } = response.body.hits;
+    console.log('existing cats:', categories);
     hits.forEach((hit) => {
       const s = hit._source;
       if (!hasTopology(s)) {
+        
+        console.log('cat found:', s, 'createing interval');
         s.intervalID = setInterval(checkHeartbeat, s.interval * 1000, s);
         categories.push(s);
       }
     });
-    // console.debug(categories);
+    console.log('latest cats:', categories);
+    console.dir(categories);
     return categories;
   } catch (err) {
     console.error(err);
