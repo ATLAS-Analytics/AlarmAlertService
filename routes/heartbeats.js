@@ -1,6 +1,7 @@
 const elasticsearch = require('@elastic/elasticsearch');
 const express = require('express');
 const bodyParser = require('body-parser');
+const { response } = require('express');
 
 const esHeartbeatTopologyIndex = 'aaas_heartbeats_topology';
 const esHeartbeatIndex = 'aaas_heartbeats';
@@ -29,8 +30,33 @@ function knownTopology(obj) {
   return found;
 }
 
+function getCategorySelector(c) {
+  const selector = [];
+  config.TOPOLOGY_FIELDS.forEach((v) => {
+    const obj = { match: {} };
+    obj.match[v] = c[v];
+    selector.push(obj);
+  });
+  return selector;
+}
+
 async function checkHeartbeat(c) {
   console.log('checking for alarm state in:', c.category, c.subcategory, c.event);
+
+  try {
+    const response = await es.count({
+      index: esHeartbeatIndex,
+      body: {
+        query: { bool: { must: getCategorySelector(c) } }
+      },
+    });
+    console.log('res: ', response);
+    if (response.body.hits.total.value === 0) {
+      console.log('No heartbeats found.');
+    }
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 async function deleteTopology(obj) {
@@ -94,7 +120,7 @@ router.post('/register', jsonParser, async (req, res) => {
   }
 
   config.REQUIRED_HEARTBEAT_TOPOLOGY_FIELDS.forEach((v) => {
-    console.log(`checking for: ${v}`);
+    // console.debug(`checking for: ${v}`);
     if (b[v] === undefined || b[v] === null) {
       res.status(400).send(`${v} is required.\n`);
     }
