@@ -63,8 +63,8 @@ async function loadHeartbeatTopology() {
     console.log('existing cats:', categories);
     hits.forEach((hit) => {
       const s = hit._source;
+      console.log('--->', s);
       if (!hasTopology(s)) {
-        
         console.log('cat found:', s, 'createing interval');
         s.intervalID = setInterval(checkHeartbeat, s.interval * 1000, s);
         categories.push(s);
