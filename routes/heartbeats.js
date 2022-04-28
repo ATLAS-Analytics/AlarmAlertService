@@ -12,8 +12,8 @@ const categories = [];
 const router = express.Router();
 const jsonParser = bodyParser.json();
 
-function hasTopology(obj) {
-  let found = true;
+function knownTopology(obj) {
+  let found = false;
   categories.forEach((c) => {
     found = true;
     config.TOPOLOGY_FIELDS.forEach((v) => {
@@ -64,7 +64,7 @@ async function loadHeartbeatTopology() {
     hits.forEach((hit) => {
       const s = hit._source;
       console.log('--->', s);
-      if (!hasTopology(s)) {
+      if (!knownTopology(s)) {
         console.log('cat found:', s, 'createing interval');
         s.intervalID = setInterval(checkHeartbeat, s.interval * 1000, s);
         categories.push(s);
@@ -154,7 +154,7 @@ router.patch('/', jsonParser, async (req, res) => {
   await loadHeartbeatTopology();
 
   // console.log('Check that the category was registered');
-  if (hasTopology(b)) {
+  if (knownTopology(b)) {
     console.debug('heartbeat category registered, lets update');
     const updateBody = {
       script: {
@@ -258,7 +258,7 @@ router.post('/', jsonParser, async (req, res) => {
   });
 
   // console.log('Check that the category was registered');
-  if (hasTopology(b)) {
+  if (knownTopology(b)) {
     // console.debug('category registered');
   } else {
     res.status(400).send('no such category, subcategory or event allowed.');
