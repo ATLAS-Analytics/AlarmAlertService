@@ -290,7 +290,8 @@ router.post('/fetch', jsonParser, async (req, res) => {
   }
 
   selector.push({ range: { created_at: { gte: `now-${b.period}h/h` } } });
-  console.log('Getting heartbeats:', selector);
+  console.log('Getting heartbeats:');
+  console.dir(selector, { depth: null });
 
   const heartbeats = [];
   try {
