@@ -42,6 +42,12 @@ function getCategorySelector(c) {
 
 async function checkHeartbeat(c) {
   console.log('checking for alarm state in:', c.category, c.subcategory, c.event);
+
+  // this needs to search for documents of the category in 2x c.interval range
+  // group documents based on tags.join()
+  // for each group
+  // generate alarm only if the first interval was OK and second interval is NOT OK.
+
   const selector = getCategorySelector(c);
   selector.push({ range: { created_at: { gte: `now-${c.interval}s/s` } } });
   try {
