@@ -38,12 +38,15 @@ app.use(session({
 
 const usr = require('./routes/user');
 const alarms = require('./routes/alarms');
+const heartbeats = require('./routes/heartbeats');
 
 usr.init(config);
 alarms.init(config);
+heartbeats.init(config);
 
 app.use('/user', usr.router);
 app.use('/alarm', alarms.router);
+app.use('/heartbeat', heartbeats.router);
 
 // GLOBUS STUFF
 const bup = Buffer.from(`${globConf.CLIENT_ID}:${globConf.CLIENT_SECRET}`).toString('base64');
@@ -190,24 +193,35 @@ app.get('/authcallback', (req, res) => {
 });
 
 app.get('/subscriptions', requiresLogin, async (req, res) => {
-  console.log(`showing all alarms to user: ${req.session.user_id}`);
+  console.log(`showing all subscriptions to user: ${req.session.user_id}`);
   const userInfo = await usr.loadUser(req.session.user.id);
-  const categories = await alarms.loadCategories();
+  const categories = await alarms.loadAlarmTopology();
+  const heartbeatsTopology = await heartbeats.loadHeartbeatTopology();
   // console.log('userINFO', userInfo);
   // TODO logic if returned info is false
   userInfo.loggedIn = true;
   userInfo.userId = req.session.user.id;
   userInfo.categories = categories;
+  userInfo.heartbeatsTopology = heartbeatsTopology;
   res.render('subscriptions', userInfo);
 });
 
 app.get('/viewer', requiresLogin, async (req, res) => {
   const data = {};
-  data.categories = await alarms.loadCategories();
+  data.categories = await alarms.loadAlarmTopology();
   if (req.session.user !== undefined && req.session.user.id !== undefined) {
     data.loggedIn = true;
   }
   res.render('viewer', data);
+});
+
+app.get('/heartbeats_viewer', requiresLogin, async (req, res) => {
+  const data = {};
+  data.categories = await heartbeats.loadHeartbeatTopology();
+  if (req.session.user !== undefined && req.session.user.id !== undefined) {
+    data.loggedIn = true;
+  }
+  res.render('heartbeats_viewer', data);
 });
 
 app.get('/docs', async (req, res) => {

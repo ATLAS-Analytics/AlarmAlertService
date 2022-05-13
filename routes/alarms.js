@@ -1,24 +1,40 @@
 const elasticsearch = require('@elastic/elasticsearch');
 const express = require('express');
 const bodyParser = require('body-parser');
+// const { truncate } = require('lodash');
 
 const esAlarmsIndex = 'aaas_alarms';
-const esCategoriesIndex = 'aaas_categories';
+const esAlarmTopologyIndex = 'aaas_categories';
 let config;
 let es;
-let allowedFields;
 const categories = [];
-const cats = [];
 
 const router = express.Router();
 const jsonParser = bodyParser.json();
 
-async function loadCategories() {
+function hasTopology(obj) {
+  let found = true;
+  categories.forEach((c) => {
+    found = true;
+    config.TOPOLOGY_FIELDS.forEach((v) => {
+      if (c[v] !== obj[v]) {
+        found = false;
+        return false;
+      }
+      return true; // continue
+    });
+    if (found === true) return false; // break out
+    return true; // continue
+  });
+  return found;
+}
+
+async function loadAlarmTopology() {
   console.log('loading categories...');
   try {
     const response = await es.search(
       {
-        index: esCategoriesIndex,
+        index: esAlarmTopologyIndex,
         size: 1000,
         body: { query: { match_all: {} } },
       },
@@ -29,16 +45,12 @@ async function loadCategories() {
     }
     const { hits } = response.body.hits;
     categories.length = 0;
-    cats.length = 0;
     hits.forEach((hit) => {
       const s = hit._source;
       // console.log(s);
       categories.push(s);
-      cats.push(`${s.category}_${s.subcategory}_${s.event}`);
     });
-
     // console.debug(categories);
-    // console.debug(cats);
     return categories;
   } catch (err) {
     console.error(err);
@@ -48,9 +60,10 @@ async function loadCategories() {
 
 function init(configuration) {
   config = configuration;
+  config.REQUIRED_ALARM_FIELDS = config.REQUIRED_ALARM_FIELDS.concat(config.TOPOLOGY_FIELDS);
+  config.REQUIRED_ALARM_TOPOLOGY_FIELDS = config.REQUIRED_ALARM_TOPOLOGY_FIELDS.concat(config.TOPOLOGY_FIELDS);
   es = new elasticsearch.Client(config.ES_HOST);
-  allowedFields = config.ALLOWED_FIELDS + ['category', 'subcategory', 'event'];
-  loadCategories();
+  loadAlarmTopology();
 }
 
 router.post('/', jsonParser, async (req, res) => {
@@ -60,35 +73,24 @@ router.post('/', jsonParser, async (req, res) => {
     res.status(400).send('nothing POSTed.\n');
     return;
   }
-  if (b.category === undefined || b.category === null) {
-    res.status(400).send('category is required.\n');
-    return;
-  }
-  if (b.subcategory === undefined || b.subcategory === null) {
-    res.status(400).send('subcategory is required.\n');
-    return;
-  }
-  if (b.event === undefined || b.event === null) {
-    res.status(400).send('event is required.\n');
-    return;
-  }
-
-  // console.log('Check that only allowed things are in.');
-  let disallowed = '';
-  Object.entries(b).forEach(([key, value]) => {
-    // console.log(`${key}: ${value}`);
-    if (allowedFields.indexOf(key) < 0) {
-      console.log(`${key} not allowed.\n`);
-      disallowed += `${key} not allowed.\n`;
+  config.REQUIRED_ALARM_FIELDS.forEach((v) => {
+    if (b[v] === undefined || b[v] === null) {
+      res.status(400).send(`${v} is required.\n`);
     }
   });
-  if (disallowed.length > 0) {
-    res.status(400).send(disallowed);
-    return;
-  }
+
+  // console.log('Check that only allowed things are in.');
+  Object.entries(b).forEach(([key]) => {
+    // console.log(`${key}: ${value}`);
+    if (!(config.REQUIRED_ALARM_FIELDS.includes(key)
+          || config.OPTIONAL_ALARM_FIELDS.includes(key))) {
+      console.log(`${key} not allowed.\n`);
+      delete b[key];
+    }
+  });
 
   // console.log('Check that the category was registered');
-  if (cats.includes(`${b.category}_${b.subcategory}_${b.event}`)) {
+  if (hasTopology(b)) {
     // console.debug('category registered');
   } else {
     res.status(400).send('no such category, subcategory or event allowed.');
@@ -113,7 +115,7 @@ router.post('/', jsonParser, async (req, res) => {
 });
 
 router.get('/categories', async (req, res) => {
-  await loadCategories();
+  await loadAlarmTopology();
   res.json(categories);
 });
 
@@ -184,34 +186,32 @@ router.post('/fetch', jsonParser, async (req, res) => {
 router.post('/category', jsonParser, async (req, res) => {
   const b = req.body;
   console.log('Adding category with body:\n', b);
-  if (b === undefined || b === null || Object.keys(b).length < 4) {
-    res.status(400).send('nothing POSTed or data incomplete.\n');
-    return;
-  }
-  if (b.category === undefined || b.category === null) {
-    res.status(400).send('category is required.\n');
-    return;
-  }
-  if (b.subcategory === undefined || b.subcategory === null) {
-    res.status(400).send('subcategory is required.\n');
-    return;
-  }
-  if (b.event === undefined || b.event === null) {
-    res.status(400).send('event is required.\n');
-    return;
-  }
-  if (b.description === undefined || b.description === null) {
-    res.status(400).send('description is required.\n');
+  if (b === undefined || b === null) {
+    res.status(400).send('nothing POSTed.\n');
     return;
   }
 
+  config.REQUIRED_ALARM_TOPOLOGY_FIELDS.forEach((v) => {
+    if (b[v] === undefined || b[v] === null) {
+      res.status(400).send(`${v} is required.\n`);
+    }
+  });
+
+  Object.entries(b).forEach(([key]) => {
+    // console.log(`${key}: ${value}`);
+    if (!(config.REQUIRED_ALARM_TOPOLOGY_FIELDS.includes(key))) {
+      console.log(`${key} not allowed.\n`);
+      delete b[key];
+    }
+  });
+
   try {
     const response = await es.index({
-      index: esCategoriesIndex, body: b, refresh: true,
+      index: esAlarmTopologyIndex, body: b, refresh: true,
     });
     console.log('Category added.');
     console.debug(response.body);
-    await loadCategories();
+    await loadAlarmTopology();
     res.status(200).send('OK');
     return;
   } catch (err) {
@@ -223,45 +223,31 @@ router.post('/category', jsonParser, async (req, res) => {
 router.patch('/category', jsonParser, async (req, res) => {
   const b = req.body;
   console.log('Patching category with body:\n', b);
-  if (b === undefined || b === null || Object.keys(b).length < 4) {
-    res.status(400).send('nothing PATCHEDed or data incomplete.\n');
+  if (b === undefined || b === null) {
+    res.status(400).send('nothing PATCHEDed.\n');
     return;
   }
-  if (b.category === undefined || b.category === null) {
-    res.status(400).send('category is required.\n');
-    return;
-  }
-  if (b.subcategory === undefined || b.subcategory === null) {
-    res.status(400).send('subcategory is required.\n');
-    return;
-  }
-  if (b.event === undefined || b.event === null) {
-    res.status(400).send('event is required.\n');
-    return;
-  }
+  config.TOPOLOGY_FIELDS.forEach((v) => {
+    if (b[v] === undefined || b[v] === null) {
+      res.status(400).send(`${v} is required.\n`);
+    }
+  });
 
-  // console.log('Check that only allowed things are in.');
-  // add allowed things to edit source.
-  let disallowed = '';
+  // add only allowed things to edit source.
   let source = '';
   Object.entries(b).forEach(([key, value]) => {
     // console.log(`${key}: ${value}`);
-    if (config.ALLOWED_CATEGORY_FIELDS.indexOf(key) < 0) {
-      console.log(`${key} not allowed.\n`);
-      disallowed += `${key} not allowed.\n`;
-    } else {
+    if (config.REQUIRED_ALARM_TOPOLOGY_FIELDS.includes(key)) {
       source += `ctx._source["${key}"] = "${value}";`;
+    } else {
+      console.log(`${key} not allowed.\n`);
     }
   });
-  if (disallowed.length > 0) {
-    res.status(400).send(disallowed);
-    return;
-  }
 
-  await loadCategories();
+  await loadAlarmTopology();
 
   // console.log('Check that the category was registered');
-  if (cats.includes(`${b.category}_${b.subcategory}_${b.event}`)) {
+  if (hasTopology(b)) {
     console.debug('category registered, lets update');
     const updateBody = {
       script: {
@@ -281,11 +267,11 @@ router.patch('/category', jsonParser, async (req, res) => {
 
     try {
       const response = await es.updateByQuery({
-        index: esCategoriesIndex, body: updateBody, refresh: true,
+        index: esAlarmTopologyIndex, body: updateBody, refresh: true,
       });
-      console.log('Category pathced.');
+      console.log('Category patched.');
       console.debug(response.body);
-      await loadCategories();
+      await loadAlarmTopology();
       res.status(200).send('OK');
       return;
     } catch (err) {
@@ -297,17 +283,38 @@ router.patch('/category', jsonParser, async (req, res) => {
   }
 });
 
-router.delete('/:category', async (req, res) => {
-  const { category } = req.params;
-  console.log('Deleting alarms in category:', category);
+router.delete('/', async (req, res) => {
+  const b = req.body;
+  // console.debug('body:', b);
+  if (b === undefined || b === null || Object.keys(b).length === 0) {
+    res.status(400).send('nothing POSTed.\n');
+    return;
+  }
+  const selector = [];
+  config.TOPOLOGY_FIELDS.forEach((v) => {
+    if (b[v] === undefined || b[v] === null) {
+      res.status(400).send(`${v} is required.\n`);
+    } else {
+      const obj = { match: {} };
+      obj.match[v] = b[v];
+      selector.push(obj);
+    }
+  });
+  console.log('Deleting alarm category:', selector);
   try {
     const response = await es.deleteByQuery({
-      index: esCategoriesIndex,
-      body: { query: { match: { category } } },
+      index: esAlarmTopologyIndex,
+      body: {
+        query: {
+          bool: {
+            must: selector,
+          },
+        },
+      },
       refresh: true,
     });
     if (response.body.deleted > 0) {
-      await loadCategories();
+      await loadAlarmTopology();
       res.status(200).send('OK');
     } else {
       console.log(response.body);
@@ -315,73 +322,10 @@ router.delete('/:category', async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error in deleting category.');
-  }
-});
-
-router.delete('/:category/:subcategory', async (req, res) => {
-  const { category, subcategory } = req.params;
-  console.log('Deleting alarms in:', category, '/', subcategory);
-  try {
-    const response = await es.deleteByQuery({
-      index: esCategoriesIndex,
-      body: {
-        query: {
-          bool: {
-            must: [
-              { match: { category } },
-              { match: { subcategory } },
-            ],
-          },
-        },
-      },
-      refresh: true,
-    });
-    if (response.body.deleted > 0) {
-      await loadCategories();
-      res.status(200).send('OK');
-    } else {
-      console.log(response.body);
-      res.status(500).send('No alarms in that subcategory.');
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error in deleting subcategory.');
-  }
-});
-
-router.delete('/:category/:subcategory/:event', async (req, res) => {
-  const { category, subcategory, event } = req.params;
-  console.log('Deleting alarms in:', category, '/', subcategory, '/', event);
-  try {
-    const response = await es.deleteByQuery({
-      index: esCategoriesIndex,
-      body: {
-        query: {
-          bool: {
-            must: [
-              { match: { category } },
-              { match: { subcategory } },
-              { match: { event } },
-            ],
-          },
-        },
-      },
-      refresh: true,
-    });
-    if (response.body.deleted > 0) {
-      await loadCategories();
-      res.status(200).send('OK');
-    } else {
-      console.log(response.body);
-      res.status(500).send('No alarms in that event.');
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error in deleting event.');
+    res.status(500).send('Error in deleting alarm category.');
   }
 });
 
 exports.router = router;
 exports.init = init;
-exports.loadCategories = loadCategories;
+exports.loadAlarmTopology = loadAlarmTopology;
