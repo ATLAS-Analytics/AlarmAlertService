@@ -56,8 +56,8 @@ async function writeUser(u) {
   console.log('writing new user');
   const defPref = {};
   Object.entries(config.PREFERENCES).forEach(([key, value]) => {
-    // console.log(`${key}: ${value}`);
-    [, defPref[key]] = value;
+    // console.log(`${key}: ${value}: default ${value.default_value}`);
+    defPref[key] = value.default_value;
   });
 
   try {
