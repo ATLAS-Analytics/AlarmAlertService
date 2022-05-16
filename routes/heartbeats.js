@@ -43,14 +43,14 @@ function getCategorySelector(c) {
 function createAlarmsIfNeeded(c, oldHB, newHB) {
   console.log('old hb:', oldHB);
   console.log('new hb:', newHB);
-  // oldHB.forEach((hit) => {
-  //   const s = hit._source;
-  //   console.log('old hb:', s);
-  // });
-  // newHB.forEach((hit) => {
-  //   const s = hit._source;
-  //   console.log('new hb: ', s);
-  // });
+  oldHB.forEach((hit) => {
+    const s = hit._source;
+    console.log('old hb:', s);
+  });
+  newHB.forEach((hit) => {
+    const s = hit._source;
+    console.log('new hb: ', s);
+  });
 }
 
 async function checkHeartbeat(c) {
@@ -71,7 +71,7 @@ async function checkHeartbeat(c) {
       size: 1000,
       body: { query: { bool: { must: selectorOld } } },
     });
-    hitsOld = resp1.body.hits;
+    hitsOld = resp1.body.hits.hits;
   } catch (err) {
     console.error('Old interval error', err);
     return false;
@@ -85,7 +85,7 @@ async function checkHeartbeat(c) {
       index: esHeartbeatIndex,
       body: { query: { bool: { must: selectorNew } } },
     });
-    hitsNew = resp2.body.hits;
+    hitsNew = resp2.body.hits.hits;
   } catch (err) {
     console.error('new interval error: ', err);
     return false;
