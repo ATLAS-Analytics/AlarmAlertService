@@ -101,7 +101,7 @@ async function deleteTopology(obj) {
       && categories[i].event === obj.event) {
       console.log('deleting category:', obj);
       clearInterval(categories[i].intervalID);
-      delete categories[i];
+      categories.splice(i, 1);
       break;
     }
   }
