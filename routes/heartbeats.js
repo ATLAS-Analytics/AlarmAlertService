@@ -71,14 +71,14 @@ function createAlarmsIfNeeded(c, oldHB, newHB) {
   oldHB.forEach((hit) => {
     const s = hit._source;
     console.log('old hb:', s);
-    collect(cOld, hit._source);
+    collect(cOld, s.source);
   });
 
   const cNew = [];
   newHB.forEach((hit) => {
     const s = hit._source;
     console.log('new hb: ', s);
-    collect(cNew, hit._source);
+    collect(cNew, s.source);
   });
 
   console.log('cOld:', cOld);
