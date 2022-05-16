@@ -40,30 +40,88 @@ function getCategorySelector(c) {
   return selector;
 }
 
+function collect(sList, src) {
+  let found = false;
+  sList.forEach((o1) => {
+    let m = true;
+    Object.keys(src).forEach((key) => {
+      m = m && (key in o1) && o1[key] === src[key];
+    });
+    if (m) {
+      // console.log('found. incr.'); 
+      o1.count += 1;
+      found = true;
+    }
+  });
+  // console.log('found:', found);
+  if (!found) {
+    const toAdd = { count: 1 };
+    Object.keys(src).forEach( (key) =>{
+      toAdd[key] = src[key];
+    });
+    sList.push(toAdd);
+  }
+}
+
+function createAlarmsIfNeeded(c, oldHB, newHB) {
+  // console.log('old hb:', oldHB);
+  // console.log('new hb:', newHB);
+
+  const cOld = [];
+  oldHB.forEach((hit) => {
+    const s = hit._source;
+    // console.log('old hb:', s);
+    collect(cOld, s.source);
+  });
+
+  const cNew = [];
+  newHB.forEach((hit) => {
+    const s = hit._source;
+    // console.log('new hb: ', s);
+    collect(cNew, s.source);
+  });
+
+  console.log('cOld:', cOld);
+  console.log('cNew:', cNew);
+}
+
 async function checkHeartbeat(c) {
   console.log('checking for alarm state in:', c.category, c.subcategory, c.event);
 
-  // this needs to search for documents of the category in 2x c.interval range
-  // group documents based on tags.join()
   // for each group
   // generate alarm only if the first interval was OK and second interval is NOT OK.
 
-  const selector = getCategorySelector(c);
-  selector.push({ range: { created_at: { gte: `now-${c.interval}s/s` } } });
+  const selectorOld = getCategorySelector(c);
+  selectorOld.push({ range: { created_at: { gte: `now-${c.interval * 2}s/s` } } });
+  selectorOld.push({ range: { created_at: { lte: `now-${c.interval}s/s` } } });
+  let hitsOld = {};
   try {
-    const response = await es.count({
+    const resp1 = await es.search({
       index: esHeartbeatIndex,
-      body: { query: { bool: { must: selector } } },
+      size: 1000,
+      body: { query: { bool: { must: selectorOld } } },
     });
-    console.debug('heartbeats found: ', response.body.count);
-    if (response.body.count < c.min_expected) {
-      console.log('Not enough heartbeats found.');
-    } else {
-      console.log('it is fine.');
-    }
+    hitsOld = resp1.body.hits.hits;
   } catch (err) {
-    console.error(err);
+    console.error('Old interval error', err);
+    return false;
   }
+
+  const selectorNew = getCategorySelector(c);
+  selectorNew.push({ range: { created_at: { gte: `now-${c.interval}s/s` } } });
+  let hitsNew = {};
+  try {
+    const resp2 = await es.search({
+      index: esHeartbeatIndex,
+      body: { query: { bool: { must: selectorNew } } },
+    });
+    hitsNew = resp2.body.hits.hits;
+  } catch (err) {
+    console.error('new interval error: ', err);
+    return false;
+  }
+  createAlarmsIfNeeded(c, hitsOld, hitsNew);
+  return true;
 }
 
 async function deleteTopology(obj) {
@@ -73,7 +131,7 @@ async function deleteTopology(obj) {
       && categories[i].event === obj.event) {
       console.log('deleting category:', obj);
       clearInterval(categories[i].intervalID);
-      delete categories[i];
+      categories.splice(i, 1);
       break;
     }
   }
