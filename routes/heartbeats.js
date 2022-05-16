@@ -48,7 +48,7 @@ function collect(sList, src) {
       m = m && (key in o1) && o1[key] === src[key];
     });
     if (m) {
-      // console.log('found. incr.'); 
+      // console.log('found. incr.');
       o1.count += 1;
       found = true;
     }
@@ -56,7 +56,7 @@ function collect(sList, src) {
   // console.log('found:', found);
   if (!found) {
     const toAdd = { count: 1 };
-    Object.keys(src).forEach( (key) =>{
+    Object.keys(src).forEach((key) => {
       toAdd[key] = src[key];
     });
     sList.push(toAdd);
