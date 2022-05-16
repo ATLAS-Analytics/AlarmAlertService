@@ -48,12 +48,12 @@ function collect(sList, src) {
       m = m && (key in o1) && o1[key] === src[key];
     });
     if (m) {
-      console.log('found. incr.'); 
+      // console.log('found. incr.'); 
       o1.count += 1;
       found = true;
     }
   });
-  console.log('found:', found);
+  // console.log('found:', found);
   if (!found) {
     const toAdd = { count: 1 };
     Object.keys(src).forEach( (key) =>{
@@ -70,14 +70,14 @@ function createAlarmsIfNeeded(c, oldHB, newHB) {
   const cOld = [];
   oldHB.forEach((hit) => {
     const s = hit._source;
-    console.log('old hb:', s);
+    // console.log('old hb:', s);
     collect(cOld, s.source);
   });
 
   const cNew = [];
   newHB.forEach((hit) => {
     const s = hit._source;
-    console.log('new hb: ', s);
+    // console.log('new hb: ', s);
     collect(cNew, s.source);
   });
 
@@ -88,8 +88,6 @@ function createAlarmsIfNeeded(c, oldHB, newHB) {
 async function checkHeartbeat(c) {
   console.log('checking for alarm state in:', c.category, c.subcategory, c.event);
 
-  // this needs to search for documents of the category in 2x c.interval range
-  // group documents based on source.join()
   // for each group
   // generate alarm only if the first interval was OK and second interval is NOT OK.
 
