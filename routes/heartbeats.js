@@ -41,16 +41,44 @@ function getCategorySelector(c) {
 }
 
 function createAlarmsIfNeeded(c, oldHB, newHB) {
-  console.log('old hb:', oldHB);
-  console.log('new hb:', newHB);
+  // console.log('old hb:', oldHB);
+  // console.log('new hb:', newHB);
+  function collect(sList, src) {
+    let found = false;
+    sList.forEach((o1) => {
+      for (const key of Object.keys(src)) {
+        if ( key in o1 && o1[key]==src[key] ) {
+          o1.count += 1;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        const toAdd = { count: 1 };
+        for (const key of Object.keys(src)) {
+          toAdd[key] = src[key];
+        }
+        sList.push(toAdd);
+      }
+    });
+  }
+
+  const cOld = [];
   oldHB.forEach((hit) => {
     const s = hit._source;
     console.log('old hb:', s);
+    collect(cOld, hit._source);
   });
+
+  const cNew = [];
   newHB.forEach((hit) => {
     const s = hit._source;
     console.log('new hb: ', s);
+    collect(cNew, hit._source);
   });
+
+  console.log('cOld:', cOld);
+  console.log('cNew:', cNew);
 }
 
 async function checkHeartbeat(c) {
