@@ -40,30 +40,56 @@ function getCategorySelector(c) {
   return selector;
 }
 
+function createAlarmsIfNeeded(c, oldHB, newHB) {
+  oldHB.forEach((hit) => {
+    const s = hit._source;
+    console.log('old hb:', s);
+  });
+  newHB.forEach((hit) => {
+    const s = hit._source;
+    console.log('new hb: ', s);
+  });
+}
+
 async function checkHeartbeat(c) {
   console.log('checking for alarm state in:', c.category, c.subcategory, c.event);
 
   // this needs to search for documents of the category in 2x c.interval range
-  // group documents based on tags.join()
+  // group documents based on source.join()
   // for each group
   // generate alarm only if the first interval was OK and second interval is NOT OK.
 
-  const selector = getCategorySelector(c);
-  selector.push({ range: { created_at: { gte: `now-${c.interval}s/s` } } });
+  const selectorOld = getCategorySelector(c);
+  selectorOld.push({ range: { created_at: { gte: `now-${c.interval * 2}s/s` } } });
+  selectorOld.push({ range: { created_at: { lte: `now-${c.interval}s/s` } } });
+  let hitsOld = {};
   try {
-    const response = await es.count({
+    const resp1 = await es.search({
       index: esHeartbeatIndex,
-      body: { query: { bool: { must: selector } } },
+      size: 1000,
+      body: { query: { bool: { must: selectorOld } } },
     });
-    console.debug('heartbeats found: ', response.body.count);
-    if (response.body.count < c.min_expected) {
-      console.log('Not enough heartbeats found.');
-    } else {
-      console.log('it is fine.');
-    }
+    hitsOld = resp1.body.hits;
   } catch (err) {
-    console.error(err);
+    console.error('Old interval error', err);
+    return false;
   }
+
+  const selectorNew = getCategorySelector(c);
+  selectorNew.push({ range: { created_at: { gte: `now-${c.interval}s/s` } } });
+  let hitsNew = {};
+  try {
+    const resp2 = await es.search({
+      index: esHeartbeatIndex,
+      body: { query: { bool: { must: selectorNew } } },
+    });
+    hitsNew = resp2.body.hits;
+  } catch (err) {
+    console.error('new interval error: ', err);
+    return false;
+  }
+  createAlarmsIfNeeded(c, hitsOld, hitsNew);
+  return true;
 }
 
 async function deleteTopology(obj) {
