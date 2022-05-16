@@ -40,28 +40,32 @@ function getCategorySelector(c) {
   return selector;
 }
 
+function collect(sList, src) {
+  let found = false;
+  sList.forEach((o1) => {
+    let m = true;
+    Object.keys(src).forEach((key) => {
+      m = m && (key in o1) && o1[key] === src[key];
+    });
+    if (m) {
+      console.log('found. incr.'); 
+      o1.count += 1;
+      found = true;
+    }
+  });
+  console.log('found:', found);
+  if (!found) {
+    const toAdd = { count: 1 };
+    Object.keys(src).forEach( (key) =>{
+      toAdd[key] = src[key];
+    });
+    sList.push(toAdd);
+  }
+}
+
 function createAlarmsIfNeeded(c, oldHB, newHB) {
   // console.log('old hb:', oldHB);
   // console.log('new hb:', newHB);
-  function collect(sList, src) {
-    let found = false;
-    sList.forEach((o1) => {
-      for (const key of Object.keys(src)) {
-        if ( key in o1 && o1[key]==src[key] ) {
-          o1.count += 1;
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        const toAdd = { count: 1 };
-        for (const key of Object.keys(src)) {
-          toAdd[key] = src[key];
-        }
-        sList.push(toAdd);
-      }
-    });
-  }
 
   const cOld = [];
   oldHB.forEach((hit) => {
