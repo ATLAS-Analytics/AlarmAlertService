@@ -99,7 +99,7 @@ function createAlarmsIfNeeded(c, oldHB, newHB) {
       Object.keys(o).forEach((k) => {
         if (k !== 'count') match = match && (k in n) && n[k] === o[k];
       });
-      console.log('o', o, 'and n', n, ' match:', match, 'has counts:', n.count >= c.min_expected);
+      // console.log('o', o, 'and n', n, ' match:', match, 'has counts:', n.count >= c.min_expected);
       if (match && n.count >= c.min_expected) alert = false;
     });
     if (alert) {
