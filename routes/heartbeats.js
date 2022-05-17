@@ -109,7 +109,10 @@ function createAlarmsIfNeeded(c, oldHB, newHB) {
         subcategory: c.subcategory,
         event: c.event,
         created_at: new Date().getTime(),
+        source: o,
       };
+      b.source.interval = c.interval;
+      b.source.min_expected = c.min_expected;
 
       es.index({
         index: esAlarmsIndex,
