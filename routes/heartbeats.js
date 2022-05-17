@@ -5,6 +5,7 @@ const { response } = require('express');
 
 const esHeartbeatTopologyIndex = 'aaas_heartbeats_topology';
 const esHeartbeatIndex = 'aaas_heartbeats';
+const esAlarmsIndex = 'aaas_alarms';
 
 let config;
 let es;
@@ -43,7 +44,6 @@ function collect(sList, src) {
       m = m && (key in o1) && o1[key] === src[key];
     });
     if (m) {
-      // console.log('found. incr.');
       o1.count += 1;
       found = true;
     }
@@ -78,13 +78,46 @@ function createAlarmsIfNeeded(c, oldHB, newHB) {
 
   console.log('cOld:', cOld);
   console.log('cNew:', cNew);
+
+  cOld.forEach((o) => {
+    if (o.count < c.min_expected) return; // was already alerted
+    let alert = true;
+    cNew.forEach((n) => {
+      let match = true;
+      Object.keys(o).forEach((k) => {
+        if (k !== 'count') match = match && (k in n) && n[k] === o[k];
+      });
+      // console.log('o', o, 'and n', n, ' match:', match, 'has counts:', n.count >= c.min_expected);
+      if (match && n.count >= c.min_expected) alert = false;
+    });
+    if (alert) {
+      // console.log('Alarm, AlArM, ALARM!', c);
+      const b = {
+        category: c.category,
+        subcategory: c.subcategory,
+        event: c.event,
+        created_at: new Date().getTime(),
+        source: o,
+      };
+      b.source.interval = c.interval;
+      b.source.min_expected = c.min_expected;
+
+      es.index({
+        index: esAlarmsIndex,
+        body: b,
+      }, (err) => {
+        if (err) {
+          console.error('cant index alarm:\n', b, err);
+        } else {
+          console.log('New HB alarm indexed.');
+        }
+      });
+    } else console.log('is fine.');
+  });
 }
 
 async function checkHeartbeat(c) {
-  console.log('checking for alarm state in:', c.category, c.subcategory, c.event);
-
-  // for each group
-  // generate alarm only if the first interval was OK and second interval is NOT OK.
+  // console.log('checking for alarm state in:', c.category, c.subcategory, c.event);
 
   const selectorOld = getCategorySelector(c);
   selectorOld.push({ range: { created_at: { gte: `now-${c.interval * 2}s/s` } } });
@@ -359,7 +392,7 @@ router.post('/', jsonParser, async (req, res) => {
       console.error('cant index heartbeat:\n', b, err);
       res.status(500).send(`something went wrong:\n${err}`);
     } else {
-      console.log('New heartbeat indexed.');
+      // console.log('New heartbeat indexed.');
       // console.debug(response.body);
       res.status(200).send('OK');
     }
