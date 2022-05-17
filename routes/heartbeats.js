@@ -103,7 +103,7 @@ function createAlarmsIfNeeded(c, oldHB, newHB) {
       if (match && n.count >= c.min_expected) alert = false;
     });
     if (alert) {
-      console.log('Alarm, AlArM, ALARM!', c);
+      // console.log('Alarm, AlArM, ALARM!', c);
       const b = {
         category: c.category,
         subcategory: c.subcategory,
@@ -129,11 +129,7 @@ function createAlarmsIfNeeded(c, oldHB, newHB) {
 }
 
 async function checkHeartbeat(c) {
-  console.log('checking for alarm state in:', c.category, c.subcategory, c.event);
-
-  // for each group
-  // generate alarm only if the first interval was OK and second interval is NOT OK.
-
+  // console.log('checking for alarm state in:', c.category, c.subcategory, c.event);
   const selectorOld = getCategorySelector(c);
   selectorOld.push({ range: { created_at: { gte: `now-${c.interval * 2}s/s` } } });
   selectorOld.push({ range: { created_at: { lte: `now-${c.interval}s/s` } } });
@@ -407,7 +403,7 @@ router.post('/', jsonParser, async (req, res) => {
       console.error('cant index heartbeat:\n', b, err);
       res.status(500).send(`something went wrong:\n${err}`);
     } else {
-      console.log('New heartbeat indexed.');
+      // console.log('New heartbeat indexed.');
       // console.debug(response.body);
       res.status(200).send('OK');
     }
