@@ -44,7 +44,6 @@ function collect(sList, src) {
       m = m && (key in o1) && o1[key] === src[key];
     });
     if (m) {
-      // console.log('found. incr.'); 
       o1.count += 1;
       found = true;
     }
@@ -52,7 +51,7 @@ function collect(sList, src) {
   // console.log('found:', found);
   if (!found) {
     const toAdd = { count: 1 };
-    Object.keys(src).forEach( (key) =>{
+    Object.keys(src).forEach((key) => {
       toAdd[key] = src[key];
     });
     sList.push(toAdd);
@@ -79,17 +78,6 @@ function createAlarmsIfNeeded(c, oldHB, newHB) {
 
   console.log('cOld:', cOld);
   console.log('cNew:', cNew);
-
-  // cOld = [
-  //   { count: 6, site: 'MWT2', instance: 'MWT2_Slate_01' },
-  //   { count: 6, site: 'AGLT2', instance: 'MWT2_Slate_01' },
-  //   { count: 6, site: 'AGLT2', instance: 'MWT2_Slate_02' },
-  // ];
-  // cNew = [
-  //   { count: 6, site: 'MWT2', instance: 'MWT2_Slate_01' },
-  //   { count: 3, site: 'AGLT2', instance: 'MWT2_Slate_01' },
-  //   { count: 3, site: 'AGLT2', instance: 'MWT2_Slate_03' }
-  // ];
 
   cOld.forEach((o) => {
     if (o.count < c.min_expected) return; // was already alerted
@@ -130,6 +118,7 @@ function createAlarmsIfNeeded(c, oldHB, newHB) {
 
 async function checkHeartbeat(c) {
   // console.log('checking for alarm state in:', c.category, c.subcategory, c.event);
+
   const selectorOld = getCategorySelector(c);
   selectorOld.push({ range: { created_at: { gte: `now-${c.interval * 2}s/s` } } });
   selectorOld.push({ range: { created_at: { lte: `now-${c.interval}s/s` } } });
