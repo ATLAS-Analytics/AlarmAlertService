@@ -5,6 +5,7 @@ const { response } = require('express');
 
 const esHeartbeatTopologyIndex = 'aaas_heartbeats_topology';
 const esHeartbeatIndex = 'aaas_heartbeats';
+const esAlarmsIndex = 'aaas_alarms';
 
 let config;
 let es;
@@ -78,6 +79,50 @@ function createAlarmsIfNeeded(c, oldHB, newHB) {
 
   console.log('cOld:', cOld);
   console.log('cNew:', cNew);
+
+  // cOld = [
+  //   { count: 6, site: 'MWT2', instance: 'MWT2_Slate_01' },
+  //   { count: 6, site: 'AGLT2', instance: 'MWT2_Slate_01' },
+  //   { count: 6, site: 'AGLT2', instance: 'MWT2_Slate_02' },
+  // ];
+  // cNew = [
+  //   { count: 6, site: 'MWT2', instance: 'MWT2_Slate_01' },
+  //   { count: 3, site: 'AGLT2', instance: 'MWT2_Slate_01' },
+  //   { count: 3, site: 'AGLT2', instance: 'MWT2_Slate_03' }
+  // ];
+
+  cOld.forEach((o) => {
+    if (o.count < c.min_expected) return; // was already alerted
+    let alert = true;
+    cNew.forEach((n) => {
+      let match = true;
+      Object.keys(o).forEach((k) => {
+        if (k !== 'count') match = match && (k in n) && n[k] === o[k];
+      });
+      console.log('o', o, 'and n', n, ' match:', match, 'has counts:', n.count >= c.min_expected);
+      if (match && n.count >= c.min_expected) alert = false;
+    });
+    if (alert) {
+      console.log('Alarm, AlArM, ALARM!', c);
+      const b = {
+        category: c.category,
+        subcategory: c.subcategory,
+        event: c.event,
+        created_at: new Date().getTime(),
+      };
+
+      es.index({
+        index: esAlarmsIndex,
+        body: b,
+      }, (err) => {
+        if (err) {
+          console.error('cant index alarm:\n', b, err);
+        } else {
+          console.log('New HB alarm indexed.');
+        }
+      });
+    } else console.log('is fine.');
+  });
 }
 
 async function checkHeartbeat(c) {
