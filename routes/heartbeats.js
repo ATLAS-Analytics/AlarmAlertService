@@ -16,16 +16,11 @@ const jsonParser = bodyParser.json();
 function knownTopology(obj) {
   let found = false;
   categories.forEach((c) => {
-    found = true;
+    let m = true;
     config.TOPOLOGY_FIELDS.forEach((v) => {
-      if (c[v] !== obj[v]) {
-        found = false;
-        return false;
-      }
-      return true; // continue
+      m = m && c[v] === obj[v];
     });
-    if (found === true) return false; // break out
-    return true; // continue
+    found = found || m;
   });
   return found;
 }
