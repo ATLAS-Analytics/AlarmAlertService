@@ -44,7 +44,6 @@ function collect(sList, src) {
       m = m && (key in o1) && o1[key] === src[key];
     });
     if (m) {
-      // console.log('found. incr.');
       o1.count += 1;
       found = true;
     }
@@ -119,6 +118,7 @@ function createAlarmsIfNeeded(c, oldHB, newHB) {
 
 async function checkHeartbeat(c) {
   // console.log('checking for alarm state in:', c.category, c.subcategory, c.event);
+
   const selectorOld = getCategorySelector(c);
   selectorOld.push({ range: { created_at: { gte: `now-${c.interval * 2}s/s` } } });
   selectorOld.push({ range: { created_at: { lte: `now-${c.interval}s/s` } } });

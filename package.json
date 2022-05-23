@@ -33,7 +33,6 @@
     "express-session": "^1.17.2",
     "https": "^1.0.0",
     "lodash": ">=4.17.21",
-    "mailgun-js": "^0.22.0",
     "npm": "^8.7.0",
     "pug": "^3.0.2",
     "requests": "^0.3.0",
