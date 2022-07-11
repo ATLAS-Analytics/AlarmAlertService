@@ -1,33 +1,36 @@
+let qCategory;
+let qSubcategory;
+let qEvent;
+let table;
 const queryString = window.location.search;
-console.log('query string:',queryString);
-var qCategory, qSubcategory, qEvent;
-var table;
+console.log('query string:', queryString);
+
 if (queryString.length > 0) {
   try {
-     const urlParams = new URLSearchParams(queryString);
-        qCategory = urlParams.get('category');
-        qSubcategory = urlParams.get('subcategory');
-        qEvent = urlParams.get('event');
-        console.log(qCategory, qSubcategory, qEvent);
-    }catch(error){
-        console.error('bad query string.');
-    }
+    const urlParams = new URLSearchParams(queryString);
+    qCategory = urlParams.get('category');
+    qSubcategory = urlParams.get('subcategory');
+    qEvent = urlParams.get('event');
+    console.log(qCategory, qSubcategory, qEvent);
+  } catch (error) {
+    console.error('bad query string.');
+  }
 }
 
 function updateForm(cat, subcat, event) {
-    const src = 'https://atlas-kibana.mwt2.org:5601/s/aaas/app/visualize?auth_provider_hint=anonymous1#'
-    src+="/edit/7fe2406a-a989-5b0f-bdb1-7d90421f8b1c?embed=true&_g=(time%3A(from%3Anow-7d%2Cto%3Anow))"
-    src+="&_a=(query%3A(language%3Akuery%2Cquery%3A%27"
-    src+="category%3A%22"+cat+"%22"
-    src+="%20AND%20subcategory%3A%22"+subcat+"%22"
-    src+="%20AND%20event%3A%22"+event+"%22"
-    src+="%27))"
-    console.log("src:"+src);
-    $('#alarmsInTime').attr('src', src);
+  let src = 'https://atlas-kibana.mwt2.org:5601/s/aaas/app/visualize?auth_provider_hint=anonymous1#';
+  src += '/edit/7fe2406a-a989-5b0f-bdb1-7d90421f8b1c?embed=true&_g=(time%3A(from%3Anow-7d%2Cto%3Anow))';
+  src += '&_a=(query%3A(language%3Akuery%2Cquery%3A%27';
+  src += "category%3A%22"+cat+"%22";
+  src += "%20AND%20subcategory%3A%22"+subcat+"%22";
+  src += "%20AND%20event%3A%22"+event+"%22";
+  src += '%27))';
+  console.log(`src:${src}`);
+  $('#alarmsInTime').attr('src', src);
 }
 
-function createCascade(){
-    $('#cascade').cascadingDropdown({
+function createCascade() {
+  $('#cascade').cascadingDropdown({
         selectBoxes: [
             {
                 selector: '#step1',
@@ -106,15 +109,15 @@ function createCascade(){
                 },
                 onChange: function(event, value, requiredValues, requirementsMet){
                     if (requirementsMet){
-                        qCategory = requiredValues.category; 
-                        qSubcategory =requiredValues.subcategory; 
+                        qCategory = requiredValues.category;
+                        qSubcategory =requiredValues.subcategory;
                         qEvent = value;
                         updateForm(qCategory, qSubcategory, qEvent);
-                        if (table===undefined){   
+                        if (table===undefined){
                             createTable();
                         } else {
                             table.ajax.reload();
-                        };
+                        }
                     }
                 }
             }
@@ -132,9 +135,9 @@ function createTable() {
             contentType: 'application/json',
             data: function ( d ) {
                 return JSON.stringify({
-                    category: qCategory, 
-                    subcategory: qSubcategory, 
-                    event: qEvent, 
+                    category: qCategory,
+                    subcategory: qSubcategory,
+                    event: qEvent,
                     period: 24
                 });
             },
@@ -144,7 +147,7 @@ function createTable() {
             }
         },
         columns: [
-            {title:'Created', data: 'created_at', 
+            {title:'Created', data: 'created_at',
                 render: function (data, type, row){
                     var d=new Date(data);
                     return d.toISOString().substr(0,19).replace('T',' ');
@@ -155,7 +158,7 @@ function createTable() {
             //- ,render: function (data, type, row){
                 //- return data.replace(',',' ');
             //- }},
-            {title:'Source', data: 'source', 
+            {title:'Source', data: 'source',
                 render: function (data, type, row){
                     if (data === undefined){ return 'empty'}
                     sourc = JSON.stringify(data);
@@ -181,9 +184,9 @@ function createTable() {
         //-   })
         //- },
     });
-};
+}
 
-if (qCategory===undefined){ 
+if (qCategory===undefined){
     createCascade();
 }
 else {
