@@ -34,7 +34,6 @@ async function loadAlarmTopology() {
         query: { match_all: {} },
       },
     );
-    console.log(response);
     if (response.hits.total.value === 0) {
       console.log('No categories found.');
       return false;
