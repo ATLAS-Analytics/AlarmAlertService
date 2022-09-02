@@ -266,6 +266,7 @@ app.get('/', async (req, res) => {
 
 app.use((req, res) => {
   console.error('Unexisting page requested:', req.path, 'params:', req.params);
+  console.error('req:', req);
   res.status(404);
   res.render('error', { error: 'Not Found' });
 });
