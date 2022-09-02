@@ -193,16 +193,16 @@ app.get('/authcallback', (req, res) => {
 });
 
 app.get('/subscriptions', requiresLogin, async (req, res) => {
-  console.log(`showing all subscriptions to user: ${req.session.user_id}`);
+  console.log(`showing all subscriptions to user: ${req.session.user.id}`);
   const userInfo = await usr.loadUser(req.session.user.id);
   const categories = await alarms.loadAlarmTopology();
   const heartbeatsTopology = await heartbeats.loadHeartbeatTopology();
-  // console.log('userINFO', userInfo);
   // TODO logic if returned info is false
   userInfo.loggedIn = true;
   userInfo.userId = req.session.user.id;
   userInfo.categories = categories;
   userInfo.heartbeatsTopology = heartbeatsTopology;
+  console.log('userINFO >>> ', userInfo);
   res.render('subscriptions', userInfo);
 });
 
