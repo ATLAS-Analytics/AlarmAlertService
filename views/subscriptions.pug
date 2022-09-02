@@ -72,7 +72,8 @@ block extra_scripts
         treedata = [];
         hartData = [];
 
-        for (i=0; i<catdata.length; i++) {
+        for (let i=0; i<catdata.length; i++) {
+            console.log(i, catdata[i]);
             treedata.push({
                 "id":catdata[i].category.replaceAll(' ', '_'),
                 "parent":"#",
