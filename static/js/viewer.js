@@ -19,43 +19,44 @@ if (queryString.length > 0) {
 
 function updateForm(cat, subcat, event) {
   let src = 'https://atlas-kibana.mwt2.org:5601/s/aaas/app/visualize?auth_provider_hint=anonymous1#';
-  src += '/edit/7fe2406a-a989-5b0f-bdb1-7d90421f8b1c?embed=true&_g=(time%3A(from%3Anow-7d%2Cto%3Anow))';
-  src += '&_a=(query%3A(language%3Akuery%2Cquery%3A%27';
-  src += "category%3A%22"+cat+"%22";
-  src += "%20AND%20subcategory%3A%22"+subcat+"%22";
-  src += "%20AND%20event%3A%22"+event+"%22";
-  src += '%27))';
-  console.log(`src:${src}`);
-  $('#alarmsInTime').attr('src', src);
+  src += '/edit/7fe2406a-a989-5b0f-bdb1-7d90421f8b1c?embed=true';
+  let query = '&_g=(time:(from:now-7d,to:now))';
+  query += "&_a=(query:(language:kuery,query:'";
+  query += `category:"${cat}"`;
+  query += ` AND subcategory:"${subcat}"`;
+  query += ` AND event:"${event}"`;
+  query += "'))";
+  const fsrc = src + encodeURIComponent(query);
+  console.log(`src:${fsrc}`);
+  $('#alarmsInTime').attr('src', fsrc);
 }
 
 function createCascade() {
   $('#cascade').cascadingDropdown({
-        selectBoxes: [
-            {
-                selector: '#step1',
-                source: function(request, response) {
-                    $.getJSON('/alarm/categories', request, function(data) {
-                        var first=true;
-                        var uniqueCategories=[];
-                        var seen=[];
-                        $.each(data, function(index,item){
-                            if (seen.includes(item.category)){
-                                return true;
-                            }
-                            uniqueCategories.push({
-                                label: item.category,
-                                value: item.category,
-                                selected: first
-                            });
-                            seen.push(item.category);
-                            first=false;
-                        });
-                        response(uniqueCategories);
-                    });
+    selectBoxes: [{
+      selector: '#step1',
+      source: function(request, response) {
+        $.getJSON('/alarm/categories', request, function(data) {
+            var first=true;
+            var uniqueCategories=[];
+            var seen=[];
+            $.each(data, function(index,item){
+                if (seen.includes(item.category)){
+                    return true;
                 }
-            },
-            {
+                uniqueCategories.push({
+                    label: item.category,
+                    value: item.category,
+                    selected: first
+                });
+                seen.push(item.category);
+                first=false;
+            });
+            response(uniqueCategories);
+        });
+      }
+    },
+    {
                 selector: '#step2',
                 requires: ['#step1'],
                 source: function(request, response) {
@@ -126,26 +127,26 @@ function createCascade() {
 }
 
 function createTable() {
-    table = $('#alarms_table').DataTable({
-        paging: true,
-        searching: true,
-        ajax:{
-            type: 'POST',
-            url: '/alarm/fetch',
-            contentType: 'application/json',
-            data: function ( d ) {
-                return JSON.stringify({
-                    category: qCategory,
-                    subcategory: qSubcategory,
-                    event: qEvent,
-                    period: 24
-                });
-            },
-            dataSrc: '',
-            error(xhr, textStatus, errorThrown) {
-                alert(`Error code:${xhr.status}.${xhr.responseText}`);
-            }
-        },
+  table = $('#alarms_table').DataTable({
+    paging: true,
+    searching: true,
+    ajax:{
+      type: 'POST',
+      url: '/alarm/fetch',
+      contentType: 'application/json',
+      data: function ( d ) {
+        return JSON.stringify({
+          category: qCategory,
+          subcategory: qSubcategory,
+          event: qEvent,
+          period: 24
+        });
+      },
+      dataSrc: '',
+      error(xhr, textStatus, errorThrown) {
+        alert(`Error code:${xhr.status}.${xhr.responseText}`);
+      }
+    },
         columns: [
             {title:'Created', data: 'created_at',
                 render: function (data, type, row){
