@@ -26,13 +26,13 @@ async function loadUser(userId = null) {
     const response = await es.search(
       { index: esUsersIndex, size: 1000, query },
     );
-    if (response.body.hits.total.value === 0) {
+    if (response.hits.total.value === 0) {
       console.log('User not found.');
       return false;
     }
     if (userId) {
       console.log('User found.');
-      const obj = response.body.hits.hits[0]._source;
+      const obj = response.hits.hits[0]._source;
       // make sure all preferences are there
       Object.entries(config.PREFERENCES).forEach(([key, value]) => {
         // console.log(`${key}: ${value}`);
@@ -45,7 +45,7 @@ async function loadUser(userId = null) {
     }
 
     console.log('Users found.');
-    return response.body.hits.hits;
+    return response.hits.hits;
   } catch (err) {
     console.error(err);
     return false;

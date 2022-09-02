@@ -129,7 +129,7 @@ async function checkHeartbeat(c) {
       size: 1000,
       query: { bool: { must: selectorOld } } ,
     });
-    hitsOld = resp1.body.hits.hits;
+    hitsOld = resp1.hits.hits;
   } catch (err) {
     console.error('Old interval error', err);
     return false;
@@ -143,7 +143,7 @@ async function checkHeartbeat(c) {
       index: esHeartbeatIndex,
       query: { bool: { must: selectorNew } },
     });
-    hitsNew = resp2.body.hits.hits;
+    hitsNew = resp2.hits.hits;
   } catch (err) {
     console.error('new interval error: ', err);
     return false;
@@ -175,11 +175,11 @@ async function loadHeartbeatTopology() {
         query: { match_all: {} },
       },
     );
-    if (response.body.hits.total.value === 0) {
+    if (response.hits.total.value === 0) {
       console.log('No heartbeats found.');
       return false;
     }
-    const { hits } = response.body.hits;
+    const { hits } = response.hits;
     hits.forEach((hit) => {
       const s = hit._source;
       if (!knownTopology(s)) {
@@ -438,10 +438,10 @@ router.post('/fetch', jsonParser, async (req, res) => {
         },
       },
     );
-    if (response.body.hits.total.value === 0) {
+    if (response.hits.total.value === 0) {
       console.log('No heartbeats found.');
     } else {
-      const { hits } = response.body.hits;
+      const { hits } = response.hits;
       hits.forEach((hit) => {
         const s = hit._source;
         // console.log(s);

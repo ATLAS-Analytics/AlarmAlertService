@@ -35,11 +35,11 @@ async function loadAlarmTopology() {
       },
     );
     console.log(response);
-    if (response.body.hits.total.value === 0) {
+    if (response.hits.total.value === 0) {
       console.log('No categories found.');
       return false;
     }
-    const { hits } = response.body.hits;
+    const { hits } = response.hits;
     categories.length = 0;
     hits.forEach((hit) => {
       const s = hit._source;
@@ -161,10 +161,10 @@ router.post('/fetch', jsonParser, async (req, res) => {
         },
       },
     );
-    if (response.body.hits.total.value === 0) {
+    if (response.hits.total.value === 0) {
       console.log('No alarms found.');
     } else {
-      const { hits } = response.body.hits;
+      const { hits } = response.hits;
       hits.forEach((hit) => {
         const s = hit._source;
         // console.log(s);
