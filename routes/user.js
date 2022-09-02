@@ -24,7 +24,7 @@ async function loadUser(userId = null) {
       console.log('loading all the users.');
     }
     const response = await es.search(
-      { index: esUsersIndex, size: 1000, body: { query } },
+      { index: esUsersIndex, size: 1000, query },
     );
     if (response.body.hits.total.value === 0) {
       console.log('User not found.');

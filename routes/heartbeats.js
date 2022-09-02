@@ -127,7 +127,7 @@ async function checkHeartbeat(c) {
     const resp1 = await es.search({
       index: esHeartbeatIndex,
       size: 1000,
-      body: { query: { bool: { must: selectorOld } } },
+      query: { bool: { must: selectorOld } } ,
     });
     hitsOld = resp1.body.hits.hits;
   } catch (err) {
@@ -141,7 +141,7 @@ async function checkHeartbeat(c) {
   try {
     const resp2 = await es.search({
       index: esHeartbeatIndex,
-      body: { query: { bool: { must: selectorNew } } },
+      query: { bool: { must: selectorNew } },
     });
     hitsNew = resp2.body.hits.hits;
   } catch (err) {
@@ -172,7 +172,7 @@ async function loadHeartbeatTopology() {
       {
         index: esHeartbeatTopologyIndex,
         size: 1000,
-        body: { query: { match_all: {} } },
+        query: { match_all: {} },
       },
     );
     if (response.body.hits.total.value === 0) {
@@ -431,11 +431,9 @@ router.post('/fetch', jsonParser, async (req, res) => {
       {
         index: esHeartbeatIndex,
         size: 1000,
-        body: {
-          query: {
-            bool: {
-              must: selector,
-            },
+        query: {
+          bool: {
+            must: selector,
           },
         },
       },

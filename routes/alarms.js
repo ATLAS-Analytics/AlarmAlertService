@@ -31,9 +31,10 @@ async function loadAlarmTopology() {
       {
         index: esAlarmTopologyIndex,
         size: 1000,
-        body: { query: { match_all: {} } },
+        query: { match_all: {} },
       },
     );
+    console.log(response);
     if (response.body.hits.total.value === 0) {
       console.log('No categories found.');
       return false;
@@ -148,16 +149,14 @@ router.post('/fetch', jsonParser, async (req, res) => {
       {
         index: esAlarmsIndex,
         size: 1000,
-        body: {
-          query: {
-            bool: {
-              must: [
-                { term: { category } },
-                { term: { subcategory } },
-                { term: { event } },
-                { range: { created_at: { gte: `now-${period}h/h` } } },
-              ],
-            },
+        query: {
+          bool: {
+            must: [
+              { term: { category } },
+              { term: { subcategory } },
+              { term: { event } },
+              { range: { created_at: { gte: `now-${period}h/h` } } },
+            ],
           },
         },
       },
