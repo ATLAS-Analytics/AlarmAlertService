@@ -1,4 +1,7 @@
 module.exports = {
+  "plugins": [
+    "jquery"
+  ],
   env: {
     es6: true,
     'shared-node-browser': true

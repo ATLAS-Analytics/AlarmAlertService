@@ -187,12 +187,11 @@ function createTable() {
     });
 }
 
-if (qCategory===undefined){
-    createCascade();
+if (qCategory === undefined) {
+  createCascade();
 }
 else {
-    updateForm(qCategory,qSubcategory,qEvent);
-    $('#cascade').hide();
-    createTable();
+  updateForm(qCategory, qSubcategory, qEvent);
+  $('#cascade').hide();
+  createTable();
 }
-
