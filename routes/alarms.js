@@ -94,19 +94,31 @@ router.post('/', jsonParser, async (req, res) => {
 
   b.created_at = new Date().getTime();
 
-  es.index({
-    index: esAlarmsIndex,
-    body: b,
-  }, (err) => {
-    if (err) {
-      console.error('cant index alarm:\n', b, err);
-      res.status(500).send(`something went wrong:\n${err}`);
-    } else {
-      console.log('New alarm indexed.');
-      // console.debug(response.body);
-      res.status(200).send('OK');
-    }
-  });
+  // es.index({
+  //   index: esAlarmsIndex,
+  //   body: b,
+  // }, (err) => {
+  //   if (err) {
+  //     console.error('cant index alarm:\n', b, err);
+  //     res.status(500).send(`something went wrong:\n${err}`);
+  //   } else {
+  //     console.log('New alarm indexed.');
+  //     // console.debug(response.body);
+  //     res.status(200).send('OK');
+  //   }
+  // });
+
+  try {
+    const response = await es.index({ index: esAlarmsIndex, body: b });
+    console.log('Alarm added.');
+    console.debug(response.body);
+    res.status(200).send('OK');
+    return;
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.body);
+  }
+
 });
 
 router.get('/categories', async (req, res) => {
