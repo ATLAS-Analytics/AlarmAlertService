@@ -76,8 +76,8 @@ function createAlarmsIfNeeded(c, oldHB, newHB) {
     collect(cNew, s.source);
   });
 
-  console.log('cOld:', cOld);
-  console.log('cNew:', cNew);
+  // console.log('cOld:', cOld);
+  // console.log('cNew:', cNew);
 
   cOld.forEach((o) => {
     if (o.count < c.min_expected) return; // was already alerted
@@ -127,7 +127,7 @@ async function checkHeartbeat(c) {
     const resp1 = await es.search({
       index: esHeartbeatIndex,
       size: 1000,
-      query: { bool: { must: selectorOld } } ,
+      query: { bool: { must: selectorOld } },
     });
     hitsOld = resp1.hits.hits;
   } catch (err) {

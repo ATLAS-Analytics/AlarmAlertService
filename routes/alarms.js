@@ -63,7 +63,7 @@ function init(configuration) {
 
 router.post('/', jsonParser, async (req, res) => {
   const b = req.body;
-  // console.debug('body:', b);
+  console.debug('body:', b);
   if (b === undefined || b === null || Object.keys(b).length === 0) {
     res.status(400).send('nothing POSTed.\n');
     return;
@@ -74,19 +74,19 @@ router.post('/', jsonParser, async (req, res) => {
     }
   });
 
-  // console.log('Check that only allowed things are in.');
+  console.log('Check that only allowed things are in.');
   Object.entries(b).forEach(([key]) => {
     // console.log(`${key}: ${value}`);
     if (!(config.REQUIRED_ALARM_FIELDS.includes(key)
           || config.OPTIONAL_ALARM_FIELDS.includes(key))) {
-      console.log(`${key} not allowed.\n`);
+      console.log(`key: >${key}< not allowed.\n`);
       delete b[key];
     }
   });
 
-  // console.log('Check that the category was registered');
+  console.log('Check that the category was registered');
   if (hasTopology(b)) {
-    // console.debug('category registered');
+    console.debug('category registered');
   } else {
     res.status(400).send('no such category, subcategory or event allowed.');
     return;
