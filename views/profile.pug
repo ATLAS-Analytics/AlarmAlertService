@@ -23,17 +23,24 @@ block content
                                 input.prefs( id=key type='checkbox' width='20px' checked=preferences[key] )
                             if val.type==='number'
                                 input.prefs( id=key type='number' width='20px' value=preferences[key] )
-
+                            if val.type==='email'
+                                input.prefs( id=key type='email' width='20px' value=preferences[key] )
                 button#update_preferences_button.btn.btn-primary Update Preferences
 
 block extra_scripts
     script.
         
-        ( function () {
+        ( 
+            function isValidEmail(email) {
+                var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                return re.test(String(email).toLowerCase());
+            }
+
+            
+            function () {
             $('#update_preferences_button').click((event) => {
                 event.preventDefault();
                 console.log('Update preferences called');
-
                 const data = {};
                 var prefs = document.getElementsByClassName("prefs");
                 for (var i = 0; i < prefs.length; i++) {
@@ -42,6 +49,12 @@ block extra_scripts
                     }
                     if (prefs[i].type === 'number' ){
                         data[prefs[i].id]=Number(prefs[i].value);
+                    }
+                    if (prefs[i].type === 'email'){
+                        if (prefs[i].value!=="" && isValidEmail(prefs[i].value)===false){
+                            alert(`Please input valid email for the ${prefs[i]}`);
+                        } 
+                        data[prefs[i].id]=prefs[i].value;
                     }
                 }
                 console.log('new prefs:', data);
