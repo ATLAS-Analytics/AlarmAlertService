@@ -51,7 +51,8 @@ block extra_scripts
                     }
                     if (prefs[i].type === 'email'){
                         if (prefs[i].value!=="" && isValidEmail(prefs[i].value)===false){
-                            alert(`Please input valid email for the ${prefs[i].name}`);
+                            alert(`Please input valid email.`);
+                            return;
                         } 
                         data[prefs[i].id]=prefs[i].value;
                     }
