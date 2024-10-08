@@ -348,7 +348,7 @@ router.delete('/', async (req, res) => {
       },
       refresh: true,
     });
-    console.log(`delete response: ${response}`);
+    console.log('delete response', response);
     if (response.result === 'deleted') {
       await loadAlarmTopology();
       res.status(200).send('OK');
