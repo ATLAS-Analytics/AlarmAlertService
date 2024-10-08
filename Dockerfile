@@ -1,4 +1,4 @@
-FROM node:current-buster
+FROM node:22
 
 LABEL maintainer Ilija Vukotic <ivukotic@cern.ch>
 
