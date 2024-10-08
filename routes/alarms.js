@@ -27,18 +27,20 @@ function hasTopology(obj) {
 async function loadAlarmTopology() {
   console.log('loading categories...');
   try {
-    const response = await es.search(
-      {
-        index: esAlarmTopologyIndex,
-        size: 1000,
-        query: { match_all: {} },
+    const response = await es.search({
+      index: esAlarmTopologyIndex,
+      size: 1000,
+      query: {
+        match_all: {}
       },
-    );
+    }, );
     if (response.hits.total.value === 0) {
       console.log('No categories found.');
       return false;
     }
-    const { hits } = response.hits;
+    const {
+      hits
+    } = response.hits;
     categories.length = 0;
     hits.forEach((hit) => {
       const s = hit._source;
@@ -77,8 +79,8 @@ router.post('/', jsonParser, async (req, res) => {
   console.log('Check that only allowed things are in.');
   Object.entries(b).forEach(([key]) => {
     // console.log(`${key}: ${value}`);
-    if (!(config.REQUIRED_ALARM_FIELDS.includes(key)
-          || config.OPTIONAL_ALARM_FIELDS.includes(key))) {
+    if (!(config.REQUIRED_ALARM_FIELDS.includes(key) ||
+        config.OPTIONAL_ALARM_FIELDS.includes(key))) {
       console.log(`key: >${key}< not allowed.\n`);
       delete b[key];
     }
@@ -95,7 +97,10 @@ router.post('/', jsonParser, async (req, res) => {
   b.created_at = new Date().getTime();
 
   try {
-    const response = await es.index({ index: esAlarmsIndex, body: b });
+    const response = await es.index({
+      index: esAlarmsIndex,
+      body: b
+    });
     // console.log('Alarm added.');
     // console.debug(response);
     res.status(200).send('OK');
@@ -135,32 +140,52 @@ router.post('/fetch', jsonParser, async (req, res) => {
     return;
   }
   const {
-    category, subcategory, event, period,
+    category,
+    subcategory,
+    event,
+    period,
   } = b;
 
   console.log('Getting alarms in:', category, '/', subcategory, '/', event, '/', period);
   const alarms = [];
   try {
-    const response = await es.search(
-      {
-        index: esAlarmsIndex,
-        size: 1000,
-        query: {
-          bool: {
-            must: [
-              { term: { category } },
-              { term: { subcategory } },
-              { term: { event } },
-              { range: { created_at: { gte: `now-${period}h/h` } } },
-            ],
-          },
+    const response = await es.search({
+      index: esAlarmsIndex,
+      size: 1000,
+      query: {
+        bool: {
+          must: [{
+              term: {
+                category
+              }
+            },
+            {
+              term: {
+                subcategory
+              }
+            },
+            {
+              term: {
+                event
+              }
+            },
+            {
+              range: {
+                created_at: {
+                  gte: `now-${period}h/h`
+                }
+              }
+            },
+          ],
         },
       },
-    );
+    }, );
     if (response.hits.total.value === 0) {
       console.log('No alarms found.');
     } else {
-      const { hits } = response.hits;
+      const {
+        hits
+      } = response.hits;
       hits.forEach((hit) => {
         const s = hit._source;
         // console.log(s);
@@ -197,7 +222,9 @@ router.post('/category', jsonParser, async (req, res) => {
 
   try {
     const response = await es.index({
-      index: esAlarmTopologyIndex, body: b, refresh: true,
+      index: esAlarmTopologyIndex,
+      body: b,
+      refresh: true,
     });
     console.log('Category added.');
     console.debug(response.body);
@@ -246,10 +273,21 @@ router.patch('/category', jsonParser, async (req, res) => {
       },
       query: {
         bool: {
-          must: [
-            { term: { category: b.category } },
-            { term: { subcategory: b.subcategory } },
-            { term: { event: b.event } },
+          must: [{
+              term: {
+                category: b.category
+              }
+            },
+            {
+              term: {
+                subcategory: b.subcategory
+              }
+            },
+            {
+              term: {
+                event: b.event
+              }
+            },
           ],
         },
       },
@@ -257,7 +295,9 @@ router.patch('/category', jsonParser, async (req, res) => {
 
     try {
       const response = await es.updateByQuery({
-        index: esAlarmTopologyIndex, body: updateBody, refresh: true,
+        index: esAlarmTopologyIndex,
+        body: updateBody,
+        refresh: true,
       });
       console.log('Category patched.');
       console.debug(response.body);
@@ -285,7 +325,9 @@ router.delete('/', async (req, res) => {
     if (b[v] === undefined || b[v] === null) {
       res.status(400).send(`${v} is required.\n`);
     } else {
-      const obj = { match: {} };
+      const obj = {
+        match: {}
+      };
       obj.match[v] = b[v];
       selector.push(obj);
     }
@@ -303,11 +345,11 @@ router.delete('/', async (req, res) => {
       },
       refresh: true,
     });
+    console.log(`delete response: ${response.body}`);
     if (response.body.deleted > 0) {
       await loadAlarmTopology();
       res.status(200).send('OK');
     } else {
-      console.log(response.body);
       res.status(500).send('No alarms in that category.');
     }
   } catch (error) {

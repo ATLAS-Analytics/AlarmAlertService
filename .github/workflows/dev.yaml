@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4.2.1
 
       - name: Extract tag name
         shell: bash
@@ -20,7 +20,7 @@ jobs:
         id: extract_tag_name
 
       - name: Docker Build & Push Action
-        uses: mr-smithers-excellent/docker-build-push@v6.3
+        uses: mr-smithers-excellent/docker-build-push@v6.4
         with:
           image: ivukotic/aaasf
           tags: ${{ steps.extract_tag_name.outputs.imagetag }}
@@ -32,6 +32,6 @@ jobs:
         uses: peter-evans/repository-dispatch@v3.0.0
         with:
           token: ${{ secrets.AAAS_GITOPS_DEPLOY_TRIGGER }}
-          repository: maniaclab/river_apps
+          repository: maniaclab/flux_apps
           event-type: gitops-aaasf-app-trigger-dev
           client-payload: '{"ref": "${{ steps.extract_tag_name.outputs.imagetag }}"}'
