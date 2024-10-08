@@ -227,7 +227,7 @@ router.post('/category', jsonParser, async (req, res) => {
       refresh: true,
     });
     console.log('Category added.');
-    console.debug(response.body);
+    console.debug(response);
     await loadAlarmTopology();
     res.status(200).send('OK');
     return;
@@ -345,7 +345,7 @@ router.delete('/', async (req, res) => {
       },
       refresh: true,
     });
-    console.log(`delete response: ${response.body}`);
+    console.log(`delete response: ${response}`);
     if (response.body.deleted > 0) {
       await loadAlarmTopology();
       res.status(200).send('OK');
