@@ -1,7 +1,9 @@
 const elasticsearch = require('@elastic/elasticsearch');
 const express = require('express');
 const bodyParser = require('body-parser');
-const { response } = require('express');
+const {
+  response
+} = require('express');
 
 const esHeartbeatTopologyIndex = 'aaas_heartbeats_topology';
 const esHeartbeatIndex = 'aaas_heartbeats';
@@ -29,7 +31,9 @@ function knownTopology(obj) {
 function getCategorySelector(c) {
   const selector = [];
   config.TOPOLOGY_FIELDS.forEach((v) => {
-    const obj = { match: {} };
+    const obj = {
+      match: {}
+    };
     obj.match[v] = c[v];
     selector.push(obj);
   });
@@ -50,7 +54,9 @@ function collect(sList, src) {
   });
   // console.log('found:', found);
   if (!found) {
-    const toAdd = { count: 1 };
+    const toAdd = {
+      count: 1
+    };
     Object.keys(src).forEach((key) => {
       toAdd[key] = src[key];
     });
@@ -120,14 +126,30 @@ async function checkHeartbeat(c) {
   // console.log('checking for alarm state in:', c.category, c.subcategory, c.event);
 
   const selectorOld = getCategorySelector(c);
-  selectorOld.push({ range: { created_at: { gte: `now-${c.interval * 2}s/s` } } });
-  selectorOld.push({ range: { created_at: { lte: `now-${c.interval}s/s` } } });
+  selectorOld.push({
+    range: {
+      created_at: {
+        gte: `now-${c.interval * 2}s/s`
+      }
+    }
+  });
+  selectorOld.push({
+    range: {
+      created_at: {
+        lte: `now-${c.interval}s/s`
+      }
+    }
+  });
   let hitsOld = {};
   try {
     const resp1 = await es.search({
       index: esHeartbeatIndex,
       size: 1000,
-      query: { bool: { must: selectorOld } },
+      query: {
+        bool: {
+          must: selectorOld
+        }
+      },
     });
     hitsOld = resp1.hits.hits;
   } catch (err) {
@@ -136,12 +158,22 @@ async function checkHeartbeat(c) {
   }
 
   const selectorNew = getCategorySelector(c);
-  selectorNew.push({ range: { created_at: { gte: `now-${c.interval}s/s` } } });
+  selectorNew.push({
+    range: {
+      created_at: {
+        gte: `now-${c.interval}s/s`
+      }
+    }
+  });
   let hitsNew = {};
   try {
     const resp2 = await es.search({
       index: esHeartbeatIndex,
-      query: { bool: { must: selectorNew } },
+      query: {
+        bool: {
+          must: selectorNew
+        }
+      },
     });
     hitsNew = resp2.hits.hits;
   } catch (err) {
@@ -154,9 +186,9 @@ async function checkHeartbeat(c) {
 
 async function deleteTopology(obj) {
   for (let i = 0; i < categories.length; i++) {
-    if (categories[i].category === obj.category
-      && categories[i].subcategory === obj.subcategory
-      && categories[i].event === obj.event) {
+    if (categories[i].category === obj.category &&
+      categories[i].subcategory === obj.subcategory &&
+      categories[i].event === obj.event) {
       console.log('deleting category:', obj);
       clearInterval(categories[i].intervalID);
       categories.splice(i, 1);
@@ -168,18 +200,20 @@ async function deleteTopology(obj) {
 async function loadHeartbeatTopology() {
   console.log('loading heartbeats...');
   try {
-    const response = await es.search(
-      {
-        index: esHeartbeatTopologyIndex,
-        size: 1000,
-        query: { match_all: {} },
+    const response = await es.search({
+      index: esHeartbeatTopologyIndex,
+      size: 1000,
+      query: {
+        match_all: {}
       },
-    );
+    }, );
     if (response.hits.total.value === 0) {
       console.log('No heartbeats found.');
       return false;
     }
-    const { hits } = response.hits;
+    const {
+      hits
+    } = response.hits;
     hits.forEach((hit) => {
       const s = hit._source;
       if (!knownTopology(s)) {
@@ -229,7 +263,9 @@ router.post('/register', jsonParser, async (req, res) => {
 
   try {
     const response = await es.index({
-      index: esHeartbeatTopologyIndex, body: b, refresh: true,
+      index: esHeartbeatTopologyIndex,
+      body: b,
+      refresh: true,
     });
     console.log('Heartbeat category added.');
     console.debug(response.body);
@@ -280,10 +316,21 @@ router.patch('/', jsonParser, async (req, res) => {
       },
       query: {
         bool: {
-          must: [
-            { term: { category: b.category } },
-            { term: { subcategory: b.subcategory } },
-            { term: { event: b.event } },
+          must: [{
+              term: {
+                category: b.category
+              }
+            },
+            {
+              term: {
+                subcategory: b.subcategory
+              }
+            },
+            {
+              term: {
+                event: b.event
+              }
+            },
           ],
         },
       },
@@ -291,7 +338,9 @@ router.patch('/', jsonParser, async (req, res) => {
 
     try {
       const response = await es.updateByQuery({
-        index: esHeartbeatTopologyIndex, body: updateBody, refresh: true,
+        index: esHeartbeatTopologyIndex,
+        body: updateBody,
+        refresh: true,
       });
       console.log('Category patched.');
       console.debug(response.body);
@@ -319,7 +368,9 @@ router.delete('/', async (req, res) => {
     if (b[v] === undefined || b[v] === null) {
       res.status(400).send(`${v} is required.\n`);
     } else {
-      const obj = { match: {} };
+      const obj = {
+        match: {}
+      };
       obj.match[v] = b[v];
       selector.push(obj);
     }
@@ -337,12 +388,12 @@ router.delete('/', async (req, res) => {
       },
       refresh: true,
     });
-    if (response.body.deleted > 0) {
+    if (response.deleted > 0) {
       deleteTopology(b);
       await loadHeartbeatTopology();
       res.status(200).send('OK');
     } else {
-      console.log(response.body);
+      console.log(response);
       res.status(500).send('No heartbeats like that.');
     }
   } catch (error) {
@@ -367,8 +418,8 @@ router.post('/', jsonParser, async (req, res) => {
   // console.log('Check that only allowed things are in.');
   Object.entries(b).forEach(([key]) => {
     // console.log(`${key}: ${value}`);
-    if (!(config.REQUIRED_HEARTBEAT_FIELDS.includes(key)
-          || config.OPTIONAL_HEARTBEAT_FIELDS.includes(key))) {
+    if (!(config.REQUIRED_HEARTBEAT_FIELDS.includes(key) ||
+        config.OPTIONAL_HEARTBEAT_FIELDS.includes(key))) {
       console.log(`${key} not allowed.\n`);
       delete b[key];
     }
@@ -421,27 +472,35 @@ router.post('/fetch', jsonParser, async (req, res) => {
   }
 
   const selector = getCategorySelector(b);
-  selector.push({ range: { created_at: { gte: `now-${b.period}h/h` } } });
+  selector.push({
+    range: {
+      created_at: {
+        gte: `now-${b.period}h/h`
+      }
+    }
+  });
   console.log('Getting heartbeats:');
-  console.dir(selector, { depth: null });
+  console.dir(selector, {
+    depth: null
+  });
 
   const heartbeats = [];
   try {
-    const response = await es.search(
-      {
-        index: esHeartbeatIndex,
-        size: 1000,
-        query: {
-          bool: {
-            must: selector,
-          },
+    const response = await es.search({
+      index: esHeartbeatIndex,
+      size: 1000,
+      query: {
+        bool: {
+          must: selector,
         },
       },
-    );
+    }, );
     if (response.hits.total.value === 0) {
       console.log('No heartbeats found.');
     } else {
-      const { hits } = response.hits;
+      const {
+        hits
+      } = response.hits;
       hits.forEach((hit) => {
         const s = hit._source;
         // console.log(s);

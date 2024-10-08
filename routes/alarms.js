@@ -348,8 +348,8 @@ router.delete('/', async (req, res) => {
       },
       refresh: true,
     });
-    console.log('delete response', response);
-    if (response.result === 'deleted') {
+    console.log('deleted docs', response.deleted);
+    if (response.deleted > 0) {
       await loadAlarmTopology();
       res.status(200).send('OK');
     } else {

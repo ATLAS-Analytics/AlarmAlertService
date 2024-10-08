@@ -16,16 +16,24 @@ function init(configuration) {
 
 async function loadUser(userId = null) {
   try {
-    let query = { match_all: {} };
+    let query = {
+      match_all: {}
+    };
     if (userId) {
       console.log('loading user\'s info...', userId);
-      query = { match: { _id: userId } };
+      query = {
+        match: {
+          _id: userId
+        }
+      };
     } else {
       console.log('loading all the users.');
     }
-    const response = await es.search(
-      { index: esUsersIndex, size: 1000, query },
-    );
+    const response = await es.search({
+      index: esUsersIndex,
+      size: 1000,
+      query
+    }, );
     if (response.hits.total.value === 0) {
       console.log('User not found.');
       return false;
@@ -103,18 +111,27 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:userId', async (req, res) => {
-  const { userId } = req.params;
+  const {
+    userId
+  } = req.params;
   res.json(await loadUser(userId));
 });
 
 router.delete('/:userId', (req, res) => {
-  const { userId } = req.params;
+  const {
+    userId
+  } = req.params;
   console.log('Deleting user with id:', userId);
-  es.deleteByQuery(
-    {
+  es.deleteByQuery({
       index: esUsersIndex,
       refresh: true,
-      body: { query: { match: { _id: userId } } },
+      body: {
+        query: {
+          match: {
+            _id: userId
+          }
+        }
+      },
     },
     (err, response) => {
       if (err) {
@@ -122,18 +139,20 @@ router.delete('/:userId', (req, res) => {
         res.status(500).send('Error in deleting user.');
         return;
       }
-      if (response.body.deleted === 1) {
+      if (response.deleted === 1) {
         res.status(200).send('OK');
         return;
       }
-      console.log(response.body);
+      console.log(response);
       res.status(500).send('No user with that ID.');
     },
   );
 });
 
 router.post('/preferences/:userId', jsonParser, async (req, res) => {
-  const { userId } = req.params;
+  const {
+    userId
+  } = req.params;
   const b = req.body;
   console.log(`Updating preferences for user ${userId} with body:\n`, b);
   if (b === undefined || b === null || Object.keys(b).length === 0) {
@@ -178,7 +197,9 @@ router.post('/preferences/:userId', jsonParser, async (req, res) => {
 });
 
 router.post('/subscriptions/:userId', jsonParser, async (req, res) => {
-  const { userId } = req.params;
+  const {
+    userId
+  } = req.params;
   const b = req.body;
   console.log(`Updating subscriptions for user ${userId} with body:\n`, b);
   if (b === undefined || b === null || Object.keys(b).length === 0) {
