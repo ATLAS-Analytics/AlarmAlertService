@@ -226,10 +226,13 @@ router.post('/category', jsonParser, async (req, res) => {
       body: b,
       refresh: true,
     });
-    console.log('Category added.');
-    console.debug(response);
-    await loadAlarmTopology();
-    res.status(200).send('OK');
+    console.log(`Category adding result: ${response.result}`);
+    if (response.result === 'created') {
+      await loadAlarmTopology();
+      res.status(200).send('OK');
+    } else {
+      res.status(500).send(response.result);
+    }
     return;
   } catch (err) {
     console.error(err);
@@ -346,7 +349,7 @@ router.delete('/', async (req, res) => {
       refresh: true,
     });
     console.log(`delete response: ${response}`);
-    if (response.body.deleted > 0) {
+    if (response.result === 'deleted') {
       await loadAlarmTopology();
       res.status(200).send('OK');
     } else {
